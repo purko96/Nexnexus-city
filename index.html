@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS AI v2.1</title>
+    <title>NEXUS AI v2.2 - STABLE</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -11,21 +11,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
 
     <style>
-        :root { --accent: #00f2ff; --purple: #bc13fe; --bg-dark: #05050a; --glass: rgba(15, 15, 25, 0.9); }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg-dark); color: white; font-family: 'Roboto', sans-serif; }
+        :root { --accent: #00f2ff; --purple: #bc13fe; --bg-dark: #05050a; --glass: rgba(15, 15, 25, 0.95); }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; color: white; font-family: 'Roboto', sans-serif; }
         canvas { position: fixed; top: 0; left: 0; z-index: 1; }
         #setup-screen { position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; }
         .setup-box { background: var(--glass); padding: 30px; border-radius: 20px; border: 1px solid var(--accent); width: 85%; max-width: 350px; text-align: center; }
-        input { width: 100%; padding: 15px; margin: 15px 0; background: rgba(255,255,255,0.05); border: 1px solid var(--purple); color: white; border-radius: 10px; }
+        input { width: 100%; padding: 15px; margin: 15px 0; background: rgba(255,255,255,0.05); border: 1px solid var(--purple); color: white; border-radius: 10px; outline: none; }
         #ui-layer { position: absolute; z-index: 10; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: flex-end; pointer-events: none; }
-        .chat-container { width: 92%; max-width: 500px; align-self: center; margin-bottom: 20px; background: var(--glass); border-radius: 20px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); pointer-events: auto; }
-        #chat-log { height: 180px; overflow-y: auto; margin-bottom: 10px; font-size: 14px; }
+        .chat-container { width: 92%; max-width: 500px; align-self: center; margin-bottom: 20px; background: var(--glass); border-radius: 20px; padding: 15px; border: 1px solid rgba(255,255,255,0.1); pointer-events: auto; backdrop-filter: blur(10px); }
+        #chat-log { height: 180px; overflow-y: auto; margin-bottom: 10px; font-size: 14px; scroll-behavior: smooth; }
         .msg { margin-bottom: 8px; padding: 10px; border-radius: 10px; }
         .ai-msg { background: rgba(0, 242, 255, 0.1); color: var(--accent); }
         .error-msg { background: rgba(255, 0, 0, 0.1); color: #ff6666; border: 1px solid red; font-size: 12px; }
         .input-group { display: flex; gap: 8px; }
         #chat-input { flex-grow: 1; padding: 12px; border-radius: 20px; background: #000; border: 1px solid var(--purple); color: white; }
-        .btn { background: linear-gradient(45deg, var(--purple), var(--accent)); border: none; color: white; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; font-family: 'Orbitron'; }
+        .btn { background: linear-gradient(45deg, var(--purple), var(--accent)); border: none; color: white; padding: 15px; border-radius: 10px; font-weight: bold; width: 100%; cursor: pointer; font-family: 'Orbitron'; text-transform: uppercase; }
         #exit-btn { position: fixed; top: 20px; right: 20px; z-index: 101; display: none; background: red; border: none; width: 40px; height: 40px; color: white; border-radius: 50%; }
         #joystick-zone { position: fixed; bottom: 40px; left: 40px; z-index: 100; display: none; }
     </style>
@@ -36,9 +36,10 @@
 
     <div id="setup-screen">
         <div class="setup-box">
-            <h2 style="font-family: 'Orbitron'; color: var(--accent);">NEXUS v2.1</h2>
-            <input type="password" id="gemini-key" placeholder="Въведи API Key">
-            <button class="btn" onclick="startEngine()">АКТИВИРАЙ</button>
+            <h2 style="font-family: 'Orbitron'; color: var(--accent);">NEXUS v2.2</h2>
+            <p style="color: #888; font-size: 11px;">СТАБИЛНА ВЕРСИЯ</p>
+            <input type="password" id="gemini-key" placeholder="Постави Gemini API Key">
+            <button class="btn" onclick="startEngine()">АКТИВИРАЙ AI</button>
         </div>
     </div>
 
@@ -48,13 +49,13 @@
     <div id="ui-layer">
         <div class="chat-container">
             <div id="chat-log">
-                <div class="msg ai-msg"><b>NEXUS:</b> Система заредена (v2.1).</div>
+                <div class="msg ai-msg"><b>NEXUS:</b> Система v2.2 онлайн. Очаквам команда.</div>
             </div>
             <div class="input-group">
-                <input type="text" id="chat-input" placeholder="Пиши тук...">
+                <input type="text" id="chat-input" placeholder="Пиши на AI...">
                 <button style="width: 50px;" class="btn" onclick="Engine.askAI()">></button>
             </div>
-            <button class="btn" style="margin-top: 10px;" onclick="Engine.togglePlay(true)">СТАРТ</button>
+            <button class="btn" style="margin-top: 10px;" onclick="Engine.togglePlay(true)">РАЗГЛЕДАЙ СВЕТА</button>
         </div>
     </div>
 
@@ -71,18 +72,19 @@
                 this.scene = new THREE.Scene();
                 this.scene.background = new THREE.Color(0x020205);
                 this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                this.camera.position.set(0, 10, 20);
+                this.camera.position.set(0, 10, 25);
                 this.renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('world-canvas'), antialias: true });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.scene.add(new THREE.GridHelper(200, 20, 0xbc13fe, 0x222222));
-                const light = new THREE.PointLight(0x00f2ff, 1, 100); light.position.set(0, 10, 0); this.scene.add(light);
+                this.renderer.setPixelRatio(window.devicePixelRatio);
+                this.scene.add(new THREE.GridHelper(300, 30, 0xbc13fe, 0x222222));
+                const light = new THREE.PointLight(0x00f2ff, 1, 100); light.position.set(0, 20, 0); this.scene.add(light);
             }
 
             initPhysics() {
                 this.world = new CANNON.World(); this.world.gravity.set(0, -9.82, 0);
                 const ground = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() });
                 ground.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2); this.world.addBody(ground);
-                this.playerMesh = new THREE.Mesh(new THREE.BoxGeometry(2,2,2), new THREE.MeshStandardMaterial({color: 0x00f2ff}));
+                this.playerMesh = new THREE.Mesh(new THREE.BoxGeometry(2,2,2), new THREE.MeshStandardMaterial({color: 0x00f2ff, emissive: 0x00f2ff}));
                 this.scene.add(this.playerMesh);
                 this.playerBody = new CANNON.Body({ mass: 5, shape: new CANNON.Box(new CANNON.Vec3(1,1,1)) });
                 this.playerBody.position.set(0, 5, 0); this.world.addBody(this.playerBody);
@@ -94,8 +96,9 @@
                 this.logChat(text, "user"); input.value = "";
                 
                 try {
-                    // ПРОМЕНЕНО: Използваме v1 и стабилен модел
-                    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${this.gKey}`;
+                    // ИЗПОЛЗВАМЕ v1beta и модел 'gemini-pro' за максимална съвместимост
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${this.gKey}`;
+                    
                     const response = await fetch(url, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
@@ -104,7 +107,7 @@
 
                     const data = await response.json();
                     if (!response.ok) {
-                        this.logChat(`ГРЕШКА: ${data.error ? data.error.message : response.status}`, "error");
+                        this.logChat(`ГРЕШКА: ${data.error ? data.error.message : response.status}. Пробвай да създадеш нов API ключ в Google AI Studio.`, "error");
                         return;
                     }
                     this.logChat(data.candidates[0].content.parts[0].text, "ai");
@@ -129,8 +132,8 @@
                 if(state) {
                     this.manager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left: '80px', bottom: '80px'}, color: '#00f2ff' });
                     this.manager.on('move', (e, data) => {
-                        this.playerBody.velocity.x = Math.cos(data.angle.radian) * data.force * 15;
-                        this.playerBody.velocity.z = -Math.sin(data.angle.radian) * data.force * 15;
+                        this.playerBody.velocity.x = Math.cos(data.angle.radian) * data.force * 18;
+                        this.playerBody.velocity.z = -Math.sin(data.angle.radian) * data.force * 18;
                     });
                     this.manager.on('end', () => this.playerBody.velocity.set(0,0,0));
                 } else if(this.manager) this.manager.destroy();
