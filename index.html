@@ -15,7 +15,7 @@
             --accent: #00f2ff;
             --purple: #bc13fe;
             --bg-dark: #05050a;
-            --glass: rgba(15, 15, 25, 0.85);
+            --glass: rgba(15, 15, 25, 0.9);
         }
 
         body, html { 
@@ -26,7 +26,6 @@
 
         canvas { position: fixed; top: 0; left: 0; z-index: 1; }
 
-        /* Setup Screen - Cleaner Look */
         #setup-screen {
             position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
@@ -36,18 +35,15 @@
             background: var(--glass); padding: 40px 30px; border-radius: 24px;
             border: 1px solid rgba(0, 242, 255, 0.3); width: 90%; max-width: 400px;
             text-align: center; backdrop-filter: blur(20px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        h1 { font-family: 'Orbitron', sans-serif; letter-spacing: 4px; font-size: 24px; margin-bottom: 10px; color: var(--accent); }
+        h1 { font-family: 'Orbitron', sans-serif; letter-spacing: 4px; color: var(--accent); margin-bottom: 5px; }
         
         input {
             width: 100%; padding: 16px; margin: 20px 0; background: rgba(255,255,255,0.05);
             border: 1px solid rgba(188, 19, 254, 0.4); color: white; border-radius: 12px;
-            box-sizing: border-box; outline: none; font-size: 16px; transition: 0.3s;
+            box-sizing: border-box; outline: none; font-size: 16px;
         }
-        input:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
 
-        /* UI Layer */
         #ui-layer {
             position: absolute; z-index: 10; width: 100%; height: 100%;
             display: none; flex-direction: column; justify-content: space-between;
@@ -55,71 +51,68 @@
         }
         #ui-layer * { pointer-events: auto; }
 
-        /* Improved Chat Area */
         .chat-container {
-            width: 90%; max-width: 500px; align-self: center; margin-bottom: 30px;
+            width: 92%; max-width: 500px; align-self: center; margin-bottom: 25px;
             background: var(--glass); border-radius: 20px; padding: 15px;
             border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px);
         }
         #chat-log {
-            height: 180px; overflow-y: auto; margin-bottom: 15px;
-            padding-right: 5px; scroll-behavior: smooth;
+            height: 200px; overflow-y: auto; margin-bottom: 12px;
+            padding-right: 5px; font-size: 14px;
         }
-        .msg { margin-bottom: 10px; font-size: 14px; line-height: 1.4; padding: 8px 12px; border-radius: 10px; }
+        .msg { margin-bottom: 10px; padding: 10px 14px; border-radius: 12px; line-height: 1.4; }
         .ai-msg { background: rgba(0, 242, 255, 0.1); color: var(--accent); border-left: 3px solid var(--accent); }
-        .user-msg { background: rgba(255, 255, 255, 0.05); color: #ddd; text-align: right; }
+        .user-msg { background: rgba(255, 255, 255, 0.05); color: #efefef; text-align: right; }
+        .error-msg { background: rgba(255, 0, 0, 0.1); color: #ff6b6b; border: 1px solid #ff4444; }
 
         .input-group { display: flex; gap: 10px; }
-        #chat-input { margin: 0; flex-grow: 1; padding: 12px 18px; border-radius: 30px; background: rgba(0,0,0,0.3); }
+        #chat-input { margin: 0; flex-grow: 1; padding: 12px 18px; border-radius: 30px; background: rgba(0,0,0,0.4); border: 1px solid var(--purple); }
 
-        /* Buttons */
         .btn-main {
             background: linear-gradient(45deg, var(--purple), var(--accent));
             border: none; color: white; padding: 16px; border-radius: 12px;
             font-weight: bold; cursor: pointer; font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase; width: 100%; transition: 0.3s;
+            text-transform: uppercase; width: 100%;
         }
         .btn-circle {
-            width: 45px; height: 45px; border-radius: 50%; border: none;
+            width: 48px; height: 48px; border-radius: 50%; border: none;
             background: var(--accent); color: black; font-weight: bold; cursor: pointer;
         }
 
         #joystick-zone { position: fixed; bottom: 40px; left: 40px; z-index: 100; display: none; }
-        #exit-btn { position: fixed; top: 20px; right: 20px; z-index: 101; display: none; background: #ff4444; border: none; border-radius: 50%; width: 40px; height: 40px; color: white; font-weight: bold; }
+        #exit-btn { position: fixed; top: 20px; right: 20px; z-index: 101; display: none; background: #ff4444; border: none; border-radius: 50%; width: 40px; height: 40px; color: white; }
     </style>
 </head>
 <body>
 
     <canvas id="world-canvas"></canvas>
 
-    <!-- SETUP SCREEN -->
     <div id="setup-screen">
         <div class="setup-box">
             <h1>NEXUS AI</h1>
-            <p style="color: #888; font-size: 12px; letter-spacing: 1px;">SYSTEM ACTIVATION</p>
-            <input type="password" id="gemini-key" placeholder="Въведи Gemini API Key">
-            <button class="btn-main" onclick="startEngine()">Стартирай AI Света</button>
+            <p style="color: #888; font-size: 11px; letter-spacing: 2px;">CORE ACTIVATION</p>
+            <input type="password" id="gemini-key" placeholder="Въведи своя Gemini API Key">
+            <button class="btn-main" onclick="startEngine()">АКТИВИРАЙ СИСТЕМАТА</button>
         </div>
     </div>
 
     <button id="exit-btn" onclick="Engine.togglePlay(false)">✕</button>
     <div id="joystick-zone"></div>
 
-    <!-- MAIN UI -->
     <div id="ui-layer">
-        <div style="padding: 20px; display: flex; gap: 10px;">
-            <button class="btn-main" style="width: auto; padding: 8px 15px; font-size: 10px;" onclick="Engine.reset()">Reset</button>
+        <div style="padding: 20px;">
+            <button class="btn-main" style="width: auto; padding: 8px 15px; font-size: 10px;" onclick="Engine.reset()">RESET SYSTEM</button>
         </div>
 
         <div class="chat-container">
             <div id="chat-log">
-                <div class="msg ai-msg"><b>NEXUS:</b> Системата е онлайн. В очакване на команди...</div>
+                <div class="msg ai-msg"><b>NEXUS:</b> Системата е онлайн. Очаквам входни данни...</div>
             </div>
             <div class="input-group">
-                <input type="text" id="chat-input" placeholder="Пиши на AI тук...">
-                <button class="btn-circle" onclick="Engine.askAI()">></button>
+                <input type="text" id="chat-input" placeholder="Комуникирай с AI...">
+                <button id="send-btn" class="btn-circle" onclick="Engine.askAI()">></button>
             </div>
-            <button class="btn-main" style="margin-top: 15px;" onclick="Engine.togglePlay(true)">Разгледай Света</button>
+            <button class="btn-main" style="margin-top: 15px;" onclick="Engine.togglePlay(true)">РАЗГЛЕДАЙ СИМУЛАЦИЯТА</button>
         </div>
     </div>
 
@@ -136,21 +129,20 @@
             initThree() {
                 this.scene = new THREE.Scene();
                 this.scene.background = new THREE.Color(0x020205);
-                this.scene.fog = new THREE.Fog(0x020205, 10, 500);
+                this.scene.fog = new THREE.Fog(0x020205, 10, 400);
 
                 this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                this.camera.position.set(0, 5, 10);
+                this.camera.position.set(0, 8, 15);
 
                 this.renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('world-canvas'), antialias: true });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.renderer.setPixelRatio(window.devicePixelRatio);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-                // Добавяме светеща решетка (Grid), за да има усещане за пространство
-                const grid = new THREE.GridHelper(200, 40, 0xbc13fe, 0x222222);
+                const grid = new THREE.GridHelper(400, 50, 0xbc13fe, 0x111111);
                 this.scene.add(grid);
 
                 const light = new THREE.PointLight(0x00f2ff, 1, 100);
-                light.position.set(0, 10, 0);
+                light.position.set(0, 20, 0);
                 this.scene.add(light);
             }
 
@@ -162,46 +154,61 @@
                 groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
                 this.world.addBody(groundBody);
 
-                // Играч (Светещо кубче)
-                const geo = new THREE.BoxGeometry(1.5, 1.5, 1.5);
-                const mat = new THREE.MeshStandardMaterial({ color: 0x00f2ff, emissive: 0x00f2ff, emissiveIntensity: 0.5 });
+                const geo = new THREE.BoxGeometry(2, 2, 2);
+                const mat = new THREE.MeshStandardMaterial({ color: 0x00f2ff, emissive: 0x00f2ff, emissiveIntensity: 0.4 });
                 this.playerMesh = new THREE.Mesh(geo, mat);
                 this.scene.add(this.playerMesh);
 
-                this.playerBody = new CANNON.Body({ mass: 5, shape: new CANNON.Box(new CANNON.Vec3(0.75, 0.75, 0.75)) });
-                this.playerBody.position.set(0, 2, 0);
+                this.playerBody = new CANNON.Body({ mass: 5, shape: new CANNON.Box(new CANNON.Vec3(1, 1, 1)) });
+                this.playerBody.position.set(0, 5, 0);
                 this.world.addBody(this.playerBody);
             }
 
             async askAI() {
                 const input = document.getElementById('chat-input');
+                const btn = document.getElementById('send-btn');
                 const text = input.value.trim();
-                if(!text) return;
+                if(!text || btn.disabled) return;
                 
                 this.logChat(text, "user");
                 input.value = "";
+                btn.disabled = true;
+                const loadingMsg = this.logChat("NEXUS мисли...", "ai");
                 
                 try {
-                    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.gKey}`, {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.gKey}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
                     });
-                    const data = await resp.json();
-                    const aiText = data.candidates[0].content.parts[0].text;
-                    this.logChat(aiText, "ai");
+
+                    const data = await response.json();
+                    loadingMsg.remove(); // Махаме надписа "мисли"
+
+                    if (!response.ok) {
+                        const err = data.error ? data.error.message : "Проблем със сървъра";
+                        this.logChat(`ГРЕШКА (${response.status}): ${err}`, "error");
+                        return;
+                    }
+
+                    const aiResponse = data.candidates[0].content.parts[0].text;
+                    this.logChat(aiResponse, "ai");
                 } catch(e) {
-                    this.logChat("Грешка при връзка с AI. Провери ключа си.", "ai");
+                    loadingMsg.remove();
+                    this.logChat("МРЕЖОВА ГРЕШКА: Моля, провери интернет връзката си.", "error");
+                } finally {
+                    btn.disabled = false;
                 }
             }
 
             logChat(msg, type) {
                 const log = document.getElementById('chat-log');
                 const div = document.createElement('div');
-                div.className = `msg ${type === 'ai' ? 'ai-msg' : 'user-msg'}`;
+                div.className = `msg ${type === 'ai' ? 'ai-msg' : (type === 'error' ? 'error-msg' : 'user-msg')}`;
                 div.innerHTML = type === 'ai' ? `<b>NEXUS:</b> ${msg}` : msg;
                 log.appendChild(div);
                 log.scrollTop = log.scrollHeight;
+                return div;
             }
 
             togglePlay(state) {
@@ -213,7 +220,7 @@
                 if(state) {
                     this.manager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left: '80px', bottom: '80px'}, color: '#00f2ff' });
                     this.manager.on('move', (e, data) => {
-                        const speed = 15;
+                        const speed = 20;
                         this.playerBody.velocity.x = Math.cos(data.angle.radian) * data.force * speed;
                         this.playerBody.velocity.z = -Math.sin(data.angle.radian) * data.force * speed;
                     });
@@ -234,8 +241,8 @@
                     this.playerMesh.quaternion.copy(this.playerBody.quaternion);
 
                     if(this.isPlaying) {
-                        const targetPos = this.playerMesh.position.clone().add(new THREE.Vector3(0, 10, 20));
-                        this.camera.position.lerp(targetPos, 0.1);
+                        const camOffset = new THREE.Vector3(0, 12, 25);
+                        this.camera.position.lerp(this.playerMesh.position.clone().add(camOffset), 0.1);
                         this.camera.lookAt(this.playerMesh.position);
                     }
                 }
@@ -244,18 +251,17 @@
         }
 
         function startEngine() {
-            const g = document.getElementById('gemini-key').value.trim();
-            if(!g) return alert("Моля, въведи API ключ!");
-            
-            localStorage.setItem('n_g', g);
+            const val = document.getElementById('gemini-key').value.trim();
+            if(!val) return alert("Въведи ключ!");
+            localStorage.setItem('n_g', val);
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('ui-layer').style.display = 'flex';
-            window.Engine = new NexusEngine(g);
+            window.Engine = new NexusEngine(val);
         }
 
         window.onload = () => {
-            const savedKey = localStorage.getItem('n_g');
-            if(savedKey) document.getElementById('gemini-key').value = savedKey;
+            const saved = localStorage.getItem('n_g');
+            if(saved) document.getElementById('gemini-key').value = saved;
         };
     </script>
 </body>
