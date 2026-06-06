@@ -3,134 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS AI: 3D CITY ENGINE</title>
+    <title>NEXUS AI | CYBER ENGINE</title>
     
-    <!-- Библиотеки -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
-    <!-- Специална библиотека за 3D градовете на Google -->
-    <script src="https://unpkg.com/3d-tiles-renderer@0.3.22/dist/index.js"></script>
 
     <style>
         :root {
-            --neon-blue: #00f2ff;
-            --neon-purple: #bc13fe;
-            --glass-bg: rgba(5, 5, 15, 0.9);
+            --accent: #00f2ff;
+            --purple: #bc13fe;
+            --bg-dark: #05050a;
+            --glass: rgba(15, 15, 25, 0.85);
         }
 
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; background: #000; color: white;
-            font-family: 'Orbitron', sans-serif;
+            overflow: hidden; background: var(--bg-dark); color: white;
+            font-family: 'Roboto', sans-serif;
         }
 
         canvas { position: fixed; top: 0; left: 0; z-index: 1; }
 
-        /* Setup Screen */
+        /* Setup Screen - Cleaner Look */
         #setup-screen {
             position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
+            display: flex; align-items: center; justify-content: center;
         }
         .setup-box {
-            background: var(--glass-bg); padding: 40px; border-radius: 20px;
-            border: 1px solid var(--neon-blue); width: 85%; max-width: 450px;
-            text-align: center; box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
+            background: var(--glass); padding: 40px 30px; border-radius: 24px;
+            border: 1px solid rgba(0, 242, 255, 0.3); width: 90%; max-width: 400px;
+            text-align: center; backdrop-filter: blur(20px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
+        h1 { font-family: 'Orbitron', sans-serif; letter-spacing: 4px; font-size: 24px; margin-bottom: 10px; color: var(--accent); }
+        
         input {
-            width: 100%; padding: 15px; margin: 12px 0; background: rgba(255,255,255,0.05);
-            border: 1px solid var(--neon-purple); color: white; border-radius: 10px;
-            box-sizing: border-box; outline: none; font-size: 14px;
+            width: 100%; padding: 16px; margin: 20px 0; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(188, 19, 254, 0.4); color: white; border-radius: 12px;
+            box-sizing: border-box; outline: none; font-size: 16px; transition: 0.3s;
         }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 242, 255, 0.2); }
 
         /* UI Layer */
         #ui-layer {
             position: absolute; z-index: 10; width: 100%; height: 100%;
-            display: none; flex-direction: column; pointer-events: none;
+            display: none; flex-direction: column; justify-content: space-between;
+            pointer-events: none;
         }
         #ui-layer * { pointer-events: auto; }
 
-        .top-nav {
-            padding: 20px; display: flex; gap: 10px; overflow-x: auto;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
-        }
-        .cyber-btn {
-            background: rgba(0,0,0,0.6); border: 1px solid var(--neon-blue);
-            color: var(--neon-blue); padding: 10px 20px; border-radius: 5px;
-            cursor: pointer; text-transform: uppercase; font-size: 12px;
-            white-space: nowrap; backdrop-filter: blur(10px);
-        }
-
-        .chat-area {
-            margin-top: auto; padding: 30px;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        /* Improved Chat Area */
+        .chat-container {
+            width: 90%; max-width: 500px; align-self: center; margin-bottom: 30px;
+            background: var(--glass); border-radius: 20px; padding: 15px;
+            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px);
         }
         #chat-log {
-            height: 120px; overflow-y: auto; margin-bottom: 15px;
-            font-size: 14px; color: #aaa;
+            height: 180px; overflow-y: auto; margin-bottom: 15px;
+            padding-right: 5px; scroll-behavior: smooth;
         }
-        .ai-msg { color: var(--neon-blue); font-weight: bold; margin-bottom: 5px; }
+        .msg { margin-bottom: 10px; font-size: 14px; line-height: 1.4; padding: 8px 12px; border-radius: 10px; }
+        .ai-msg { background: rgba(0, 242, 255, 0.1); color: var(--accent); border-left: 3px solid var(--accent); }
+        .user-msg { background: rgba(255, 255, 255, 0.05); color: #ddd; text-align: right; }
 
-        .input-wrap { display: flex; gap: 10px; }
-        #chat-input { flex-grow: 1; border-radius: 25px; padding: 15px; background: rgba(255,255,255,0.1); border: 1px solid var(--neon-purple); color: white; }
+        .input-group { display: flex; gap: 10px; }
+        #chat-input { margin: 0; flex-grow: 1; padding: 12px 18px; border-radius: 30px; background: rgba(0,0,0,0.3); }
 
-        #play-btn {
-            width: 100%; padding: 20px; margin-top: 15px; border: none;
-            background: linear-gradient(45deg, #ff0055, #bc13fe);
-            color: white; font-weight: bold; border-radius: 10px; cursor: pointer;
-            font-size: 16px; letter-spacing: 2px;
+        /* Buttons */
+        .btn-main {
+            background: linear-gradient(45deg, var(--purple), var(--accent));
+            border: none; color: white; padding: 16px; border-radius: 12px;
+            font-weight: bold; cursor: pointer; font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase; width: 100%; transition: 0.3s;
+        }
+        .btn-circle {
+            width: 45px; height: 45px; border-radius: 50%; border: none;
+            background: var(--accent); color: black; font-weight: bold; cursor: pointer;
         }
 
-        /* Controls */
-        #joystick-zone { position: fixed; bottom: 50px; left: 50px; z-index: 100; display: none; width: 150px; height: 150px; }
-        #exit-btn { position: fixed; top: 20px; right: 20px; z-index: 101; display: none; background: red; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-weight: bold; }
+        #joystick-zone { position: fixed; bottom: 40px; left: 40px; z-index: 100; display: none; }
+        #exit-btn { position: fixed; top: 20px; right: 20px; z-index: 101; display: none; background: #ff4444; border: none; border-radius: 50%; width: 40px; height: 40px; color: white; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <canvas id="world-canvas"></canvas>
 
+    <!-- SETUP SCREEN -->
     <div id="setup-screen">
         <div class="setup-box">
-            <h1 style="color: var(--neon-blue);">NEXUS 3D GEN</h1>
-            <p style="color: #666; font-size: 12px;">ENTER AUTHORIZATION KEYS</p>
-            <input type="password" id="gemini-key" placeholder="Gemini API Key">
-            <input type="password" id="maps-key" placeholder="Google Maps (Map Tiles API) Key">
-            <button class="cyber-btn" style="width: 100%; margin-top: 10px; padding: 18px;" onclick="startEngine()">АКТИВИРАЙ ГРАДСКА СРЕДА</button>
+            <h1>NEXUS AI</h1>
+            <p style="color: #888; font-size: 12px; letter-spacing: 1px;">SYSTEM ACTIVATION</p>
+            <input type="password" id="gemini-key" placeholder="Въведи Gemini API Key">
+            <button class="btn-main" onclick="startEngine()">Стартирай AI Света</button>
         </div>
     </div>
 
-    <button id="exit-btn" onclick="Engine.togglePlay(false)">X</button>
+    <button id="exit-btn" onclick="Engine.togglePlay(false)">✕</button>
     <div id="joystick-zone"></div>
 
+    <!-- MAIN UI -->
     <div id="ui-layer">
-        <div class="top-nav">
-            <button class="cyber-btn" onclick="Engine.load3DCity()">ЗАРЕДИ 3D ГРАД</button>
-            <button class="cyber-btn" onclick="Engine.setCamera('top')">2D ИЗГЛЕД</button>
-            <button class="cyber-btn" onclick="Engine.setCamera('iso')">3D ИЗГЛЕД</button>
-            <button class="cyber-btn" onclick="Engine.reset()">RESET</button>
+        <div style="padding: 20px; display: flex; gap: 10px;">
+            <button class="btn-main" style="width: auto; padding: 8px 15px; font-size: 10px;" onclick="Engine.reset()">Reset</button>
         </div>
 
-        <div class="chat-area">
+        <div class="chat-container">
             <div id="chat-log">
-                <div class="ai-msg">NEXUS: Готов за генерация на реалистичен 3D град.</div>
+                <div class="msg ai-msg"><b>NEXUS:</b> Системата е онлайн. В очакване на команди...</div>
             </div>
-            <div class="input-wrap">
-                <input type="text" id="chat-input" placeholder="Команда към AI...">
-                <button class="cyber-btn" onclick="Engine.askAI()">></button>
+            <div class="input-group">
+                <input type="text" id="chat-input" placeholder="Пиши на AI тук...">
+                <button class="btn-circle" onclick="Engine.askAI()">></button>
             </div>
-            <button id="play-btn" onclick="Engine.togglePlay(true)">START EXPLORATION</button>
+            <button class="btn-main" style="margin-top: 15px;" onclick="Engine.togglePlay(true)">Разгледай Света</button>
         </div>
     </div>
 
     <script>
         class NexusEngine {
-            constructor(gKey, mKey) {
+            constructor(gKey) {
                 this.gKey = gKey;
-                this.mKey = mKey;
-                this.objects = [];
                 this.isPlaying = false;
-                
                 this.initThree();
                 this.initPhysics();
                 this.animate();
@@ -138,86 +135,73 @@
 
             initThree() {
                 this.scene = new THREE.Scene();
-                this.scene.background = new THREE.Color(0x050508);
-                // Добавяме мъгла за дълбочина
-                this.scene.fog = new THREE.FogExp2(0x050508, 0.0015);
+                this.scene.background = new THREE.Color(0x020205);
+                this.scene.fog = new THREE.Fog(0x020205, 10, 500);
 
-                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 20000);
-                this.camera.position.set(0, 100, 200);
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.camera.position.set(0, 5, 10);
 
                 this.renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('world-canvas'), antialias: true });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.setPixelRatio(window.devicePixelRatio);
 
-                // Реалистично осветление
-                const ambient = new THREE.AmbientLight(0xffffff, 0.8);
-                this.scene.add(ambient);
+                // Добавяме светеща решетка (Grid), за да има усещане за пространство
+                const grid = new THREE.GridHelper(200, 40, 0xbc13fe, 0x222222);
+                this.scene.add(grid);
 
-                const sun = new THREE.DirectionalLight(0xffffff, 1);
-                sun.position.set(500, 1000, 500);
-                this.scene.add(sun);
+                const light = new THREE.PointLight(0x00f2ff, 1, 100);
+                light.position.set(0, 10, 0);
+                this.scene.add(light);
             }
 
             initPhysics() {
                 this.world = new CANNON.World();
                 this.world.gravity.set(0, -9.82, 0);
 
-                // Под (невидим, за да не пада играча под града)
                 const groundBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() });
                 groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
                 this.world.addBody(groundBody);
 
-                // Играч (Сфера/Куб)
-                const geo = new THREE.BoxGeometry(2, 2, 2);
-                const mat = new THREE.MeshStandardMaterial({ color: 0x00f2ff, emissive: 0x00f2ff });
+                // Играч (Светещо кубче)
+                const geo = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+                const mat = new THREE.MeshStandardMaterial({ color: 0x00f2ff, emissive: 0x00f2ff, emissiveIntensity: 0.5 });
                 this.playerMesh = new THREE.Mesh(geo, mat);
                 this.scene.add(this.playerMesh);
 
-                this.playerBody = new CANNON.Body({ mass: 5, shape: new CANNON.Box(new CANNON.Vec3(1,1,1)) });
-                this.playerBody.position.set(0, 10, 0);
+                this.playerBody = new CANNON.Body({ mass: 5, shape: new CANNON.Box(new CANNON.Vec3(0.75, 0.75, 0.75)) });
+                this.playerBody.position.set(0, 2, 0);
                 this.world.addBody(this.playerBody);
-            }
-
-            /**
-             * ЗАРЕЖДАНЕ НА 3D ТЕЙЛОВЕ (РЕАЛИСТИЧЕН ГРАД)
-             */
-            load3DCity() {
-                this.logChat("NEXUS: Свързвам се с Google 3D Tiles API...", "ai");
-                
-                const tilesUrl = `https://tile.googleapis.com/v1/3dtiles/root.json?key=${this.mKey}`;
-                
-                this.tilesRenderer = new tilesRenderer.TilesRenderer(tilesUrl);
-                this.tilesRenderer.setCamera(this.camera);
-                this.tilesRenderer.setResolutionScale(0.8); // Оптимизация
-
-                // Ориентация: Google ползва Z-up, превръщаме в Y-up
-                this.tilesRenderer.group.rotation.x = -Math.PI / 2;
-                this.scene.add(this.tilesRenderer.group);
-
-                this.cityActive = true;
-                this.logChat("NEXUS: Градът се рендерира. Изчакайте детайлите.", "ai");
             }
 
             async askAI() {
                 const input = document.getElementById('chat-input');
-                const text = input.value;
+                const text = input.value.trim();
                 if(!text) return;
                 
-                this.logChat("Вие: " + text);
-                input.value = "NEXUS мисли...";
-
+                this.logChat(text, "user");
+                input.value = "";
+                
                 try {
                     const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${this.gKey}`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ contents: [{ parts: [{ text: `Ти си AI в 3D град. Потребителя иска: ${text}. Ако иска промяна на времето, отговори кратко.` }] }] })
+                        body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
                     });
                     const data = await resp.json();
-                    this.logChat("NEXUS: " + data.candidates[0].content.parts[0].text, "ai");
+                    const aiText = data.candidates[0].content.parts[0].text;
+                    this.logChat(aiText, "ai");
                 } catch(e) {
-                    this.logChat("Грешка при връзка с AI.", "ai");
+                    this.logChat("Грешка при връзка с AI. Провери ключа си.", "ai");
                 }
-                input.value = "";
+            }
+
+            logChat(msg, type) {
+                const log = document.getElementById('chat-log');
+                const div = document.createElement('div');
+                div.className = `msg ${type === 'ai' ? 'ai-msg' : 'user-msg'}`;
+                div.innerHTML = type === 'ai' ? `<b>NEXUS:</b> ${msg}` : msg;
+                log.appendChild(div);
+                log.scrollTop = log.scrollHeight;
             }
 
             togglePlay(state) {
@@ -227,9 +211,9 @@
                 document.getElementById('exit-btn').style.display = state ? 'block' : 'none';
 
                 if(state) {
-                    this.manager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left: '75px', bottom: '75px'}, color: 'cyan' });
+                    this.manager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left: '80px', bottom: '80px'}, color: '#00f2ff' });
                     this.manager.on('move', (e, data) => {
-                        const speed = 40;
+                        const speed = 15;
                         this.playerBody.velocity.x = Math.cos(data.angle.radian) * data.force * speed;
                         this.playerBody.velocity.z = -Math.sin(data.angle.radian) * data.force * speed;
                     });
@@ -239,71 +223,39 @@
                 }
             }
 
-            setCamera(mode) {
-                if(mode === 'top') {
-                    this.camera.position.set(0, 500, 0);
-                    this.camera.lookAt(0,0,0);
-                } else {
-                    this.camera.position.set(0, 100, 200);
-                    this.camera.lookAt(0,0,0);
-                }
-            }
-
-            logChat(msg, type) {
-                const log = document.getElementById('chat-log');
-                const div = document.createElement('div');
-                if(type === 'ai') div.className = 'ai-msg';
-                div.innerText = msg;
-                log.appendChild(div);
-                log.scrollTop = log.scrollHeight;
-            }
-
             reset() { localStorage.clear(); location.reload(); }
 
             animate() {
                 requestAnimationFrame(() => this.animate());
-                
                 this.world.step(1/60);
-                
-                // Обновяване на 3D Тейловете (ГРАДА)
-                if(this.cityActive && this.tilesRenderer) {
-                    this.tilesRenderer.update();
-                }
 
                 if(this.playerMesh && this.playerBody) {
                     this.playerMesh.position.copy(this.playerBody.position);
                     this.playerMesh.quaternion.copy(this.playerBody.quaternion);
 
                     if(this.isPlaying) {
-                        const offset = new THREE.Vector3(0, 30, 60);
-                        offset.applyQuaternion(this.playerMesh.quaternion);
-                        this.camera.position.lerp(this.playerMesh.position.clone().add(offset), 0.1);
+                        const targetPos = this.playerMesh.position.clone().add(new THREE.Vector3(0, 10, 20));
+                        this.camera.position.lerp(targetPos, 0.1);
                         this.camera.lookAt(this.playerMesh.position);
                     }
                 }
-
                 this.renderer.render(this.scene, this.camera);
             }
         }
 
         function startEngine() {
-            const g = document.getElementById('gemini-key').value;
-            const m = document.getElementById('maps-key').value;
-            if(!g || !m) return alert("Въведете ключове!");
+            const g = document.getElementById('gemini-key').value.trim();
+            if(!g) return alert("Моля, въведи API ключ!");
             
             localStorage.setItem('n_g', g);
-            localStorage.setItem('n_m', m);
-            
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('ui-layer').style.display = 'flex';
-            window.Engine = new NexusEngine(g, m);
+            window.Engine = new NexusEngine(g);
         }
 
         window.onload = () => {
-            if(localStorage.getItem('n_g')) {
-                document.getElementById('gemini-key').value = localStorage.getItem('n_g');
-                document.getElementById('maps-key').value = localStorage.getItem('n_m');
-            }
+            const savedKey = localStorage.getItem('n_g');
+            if(savedKey) document.getElementById('gemini-key').value = savedKey;
         };
     </script>
 </body>
