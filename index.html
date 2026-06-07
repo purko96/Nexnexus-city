@@ -17,7 +17,7 @@
             --accent: #00f2ff;
             --purple: #bc13fe;
             --bg-dark: #05050a;
-            --glass: rgba(15, 15, 25, 0.9);
+            --glass: rgba(15, 15, 25, 0.95);
         }
 
         body, html { 
@@ -30,7 +30,7 @@
         canvas { position: fixed; top: 0; left: 0; z-index: 1; }
 
         #setup-screen {
-            position: fixed; z-index: 1000; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; z-index: 5000; top: 0; left: 0; width: 100%; height: 100%;
             background: radial-gradient(circle at center, #1a1a2e 0%, #000 100%);
             display: flex; align-items: center; justify-content: center;
         }
@@ -107,7 +107,7 @@
             background: var(--glass); padding: 15px; border-radius: 16px;
             border: 1px solid var(--accent); display: none; min-width: 180px;
             backdrop-filter: blur(10px);
-            transform: scale(0.75);
+            transform: scale(0.85);
             transform-origin: top left;
         }
         .inspector-btn {
@@ -142,23 +142,21 @@
         .btn-asset-item { background: rgba(0, 242, 255, 0.08); border: 1px solid var(--accent); color: white; padding: 15px 10px; border-radius: 10px; cursor: pointer; text-align: center; font-weight: bold; font-size: 13px; font-family: 'Roboto'; transition: 0.2s; }
         .btn-asset-item:hover { background: var(--accent); color: black; }
 
-        .list-sites { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
-        .site-card { background: rgba(188, 19, 254, 0.05); border: 1px solid rgba(188, 19, 254, 0.3); padding: 12px; border-radius: 10px; text-decoration: none; color: white; display: flex; flex-direction: column; gap: 4px; transition: 0.2s; }
-        .site-card:hover { border-color: var(--purple); background: rgba(188, 19, 254, 0.15); transform: translateY(-2px); }
-        .site-name { font-family: 'Orbitron'; font-size: 13px; color: var(--accent); font-weight: bold; }
-        .site-format { font-size: 11px; color: #888; }
-
+        /* Оптимизиран и фиксиран Анимационен Хъб */
         #animation-hub {
-            position: fixed; z-index: 3000; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(4, 4, 8, 0.98); display: none; flex-direction: row; padding: 20px;
-            box-sizing: border-box; font-family: 'Roboto', sans-serif;
+            position: fixed; z-index: 4000; top: 0; left: 0; width: 100%; height: 100%;
+            background: #040408; display: none; flex-direction: row; padding: 20px;
+            box-sizing: border-box; font-family: 'Roboto', sans-serif; gap: 15px;
+            overflow: hidden;
         }
         .anim-panel-side {
-            flex: 1; background: var(--glass); border: 1px solid rgba(0, 242, 255, 0.25);
+            flex: 1; background: #0c0c14; border: 1px solid rgba(0, 242, 255, 0.25);
             border-radius: 20px; display: flex; flex-direction: column; padding: 18px; box-sizing: border-box;
+            z-index: 4010;
         }
         .anim-list-scroll {
             overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;
+            max-height: 100%;
         }
         .anim-item-btn {
             background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
@@ -172,14 +170,39 @@
             border-color: var(--purple) !important; background: rgba(188,19,254,0.15) !important; color: #fff !important; font-weight: bold;
         }
         .anim-preview-center {
-            flex: 2; position: relative; margin: 0 20px; background: radial-gradient(circle at center, #111126 0%, #030307 100%);
+            flex: 1.5; position: relative; background: radial-gradient(circle at center, #111126 0%, #030307 100%);
             border-radius: 24px; border: 1px solid rgba(188, 19, 254, 0.2); overflow: hidden;
+            height: 100%;
         }
         .anim-control-row {
             display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;
         }
         .anim-control-row label { font-size: 11px; color: #8a8a9e; font-family: 'Orbitron'; letter-spacing: 1px; }
         .anim-slider { width: 100%; accent-color: var(--accent); cursor: pointer; }
+
+        /* МАГИЯТА: CSS Правила специално за екрани на ТЕЛЕФОНИ */
+        @media (max-width: 768px) {
+            #animation-hub {
+                flex-direction: column;
+                overflow-y: auto; /* Позволява на целия хъб да се превърта вертикално */
+                padding: 10px;
+                gap: 10px;
+            }
+            .anim-panel-side {
+                flex: none;
+                width: 100%;
+                height: auto;
+                min-height: 250px;
+            }
+            .anim-preview-center {
+                flex: none;
+                width: 100%;
+                height: 300px; /* Фиксирана хубава височина за 3D прозореца на телефон */
+            }
+            .anim-list-scroll {
+                max-height: 200px; /* Спира разтягането на списъка извън кутията му */
+            }
+        }
     </style>
 </head>
 <body>
@@ -395,7 +418,7 @@
 
                 const movieTypes = [
                     "Драматичен плач", "Силен актьорски смях", "Диалог с жестове", "Уплашено оглеждане", "Военен поздрав",
-                    "Романтично махане", "Сядане на трон", "Мислителна поза", "Падане в безсъзнание", "Бавен епичен ход",
+                    "Romantic waving", "Сядане на трон", "Мислителна поза", "Падане в безсъзнание", "Бавен епичен ход",
                     "Шекспирова реч", "Поклон перед публика", "Изплашено бягство", "Посочване с ярост", "Заспиване на легло",
                     "Прегръдка в близък план", "Ръкостискане", "Четене на тайна книга", "Пиене от чаша", "Кашляне в прахта",
                     "Гледане към небето", "Избърсване на сълза", "Тайнствено шепнене", "Внезапен шок", "Победоносно вдигане на ръце"
@@ -691,7 +714,6 @@
                     return Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
                 };
 
-                // ЗАЩИТА: Спираме затварянето на инспектора, ако кликнем върху самия него
                 const inspectorPanel = document.getElementById('inspector-panel');
                 inspectorPanel.addEventListener('mousedown', (e) => e.stopPropagation());
                 inspectorPanel.addEventListener('touchstart', (e) => e.stopPropagation());
@@ -712,7 +734,6 @@
 
                     this.raycaster.setFromCamera(this.mouse, this.camera);
                     
-                    // Проверяваме само реалните 3D модели, които могат да бъдат избирани
                     const selectableObjects = [...this.dynamicMeshes, this.playerMesh];
                     const intersects = this.raycaster.intersectObjects(selectableObjects, true);
 
@@ -740,7 +761,6 @@
                         document.getElementById('inspector-panel').style.display = 'block';
                         document.getElementById('inspector-name').innerText = `Обект: ${objName}`;
                     } else {
-                        // Ако сме извън режим на игра и сме кликнали на празно място -> затваряме инспектора
                         if (!this.isPlaying) {
                             this.deselectObject();
                             this.isDragging = true;
@@ -1070,7 +1090,6 @@
                 }
 
                 if(/анимаци/i.test(text)) {
-                    // Променено: Вече не форсираме отваряне без селекция, а даваме инструкции
                     if (this.selectedMesh) {
                         this.openAnimHub();
                     } else {
