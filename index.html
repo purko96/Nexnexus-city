@@ -7,6 +7,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
 
@@ -39,14 +40,14 @@
         h1 { font-family: 'Orbitron', sans-serif; letter-spacing: 4px; color: var(--accent); margin-bottom: 5px; }
         
         input {
-            width: 100%; padding: 16px; margin: 20px 0; background: rgba(255,255,255,0.05);
+            width: 100%; padding: 16px; margin: 10px 0; background: rgba(255,255,255,0.05);
             border: 1px solid rgba(188, 19, 254, 0.4); color: white; border-radius: 12px;
-            box-sizing: border-box; outline: none; font-size: 16px;
+            box-sizing: border-box; outline: none; font-size: 14px;
         }
 
         #ui-layer {
             position: absolute; z-index: 10; width: 100%; height: 100%;
-            display: none; flex-direction: column; justify-content: space-between;
+            display: none; flex-direction: column; justify-content: flex-end;
             pointer-events: none;
         }
         #ui-layer * { pointer-events: auto; }
@@ -81,32 +82,95 @@
 
         #joystick-zone { position: fixed; bottom: 40px; left: 40px; z-index: 100; display: none; width: 150px; height: 150px; }
         #exit-btn { position: fixed; top: 20px; right: 20px; z-index: 101; display: none; background: #ff4444; border: none; border-radius: 50%; width: 40px; height: 40px; color: white; font-weight: bold; }
+
+        #action-buttons-zone {
+            position: fixed; bottom: 45px; right: 45px; z-index: 100;
+            display: none; width: 140px; height: 140px;
+        }
+        .action-btn {
+            position: absolute; width: 45px; height: 45px; border-radius: 50%;
+            border: 2px solid var(--accent); background: rgba(5, 5, 10, 0.75);
+            color: white; font-family: 'Orbitron'; font-weight: bold; font-size: 16px;
+            cursor: pointer; box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
+            display: flex; align-items: center; justify-content: center;
+            user-select: none; -webkit-user-select: none;
+        }
+        .action-btn:active { background: var(--accent); color: black; }
+        #btn-Y { top: 0; left: 47px; border-color: #ffeb3b; color: #ffeb3b; }
+        #btn-X { top: 47px; left: 0; border-color: #00f2ff; color: #00f2ff; }
+        #btn-A { bottom: 0; left: 47px; border-color: #4caf50; color: #4caf50; }
+        #btn-B { top: 47px; right: 0; border-color: #f44336; color: #f44336; }
+
+        #inspector-panel {
+            position: fixed; top: 20px; left: 20px; z-index: 200;
+            background: var(--glass); padding: 15px; border-radius: 16px;
+            border: 1px solid var(--accent); display: none; min-width: 180px;
+            backdrop-filter: blur(10px);
+        }
+        .inspector-btn {
+            background: rgba(255,255,255,0.1); border: 1px solid var(--accent);
+            color: white; padding: 6px 10px; margin: 4px 2px; border-radius: 6px;
+            cursor: pointer; font-size: 12px;
+        }
+        
+        #project-mini-badge {
+            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+            z-index: 150; background: rgba(5, 5, 10, 0.85); 
+            width: 18px; height: 18px; 
+            border-radius: 50%; border: 1px solid var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Orbitron'; font-size: 9px; font-weight: bold; color: var(--accent);
+            box-shadow: 0 0 6px rgba(0, 242, 255, 0.3);
+        }
     </style>
 </head>
 <body>
 
     <canvas id="world-canvas"></canvas>
+    
+    <div id="project-mini-badge">1</div>
 
     <div id="setup-screen">
         <div class="setup-box">
             <h1>NEXUS AI</h1>
             <p style="color: #888; font-size: 11px; letter-spacing: 2px;">CORE ACTIVATION</p>
-            <input type="password" id="gemini-key" placeholder="Въведи своя Gemini API Key">
+            <input type="password" id="gemini-key" placeholder="Въведи Gemini API Key">
+            <input type="password" id="groq-key" placeholder="Въведи Groq API Key (Опционално)">
+            <input type="password" id="hf-key" placeholder="Въведи Hugging Face Key (Опционално)">
             <button class="btn-main" onclick="startEngine()">АКТИВИРАЙ СИСТЕМАТА</button>
         </div>
+    </div>
+
+    <div id="inspector-panel">
+        <div id="inspector-name" style="font-family: 'Orbitron'; font-size: 14px; color: var(--accent); margin-bottom: 10px;">Обект: Няма</div>
+        <button class="inspector-btn" onclick="Engine.modifySelected('scale', 1.2)">➕ Уголеми</button>
+        <button class="inspector-btn" onclick="Engine.modifySelected('scale', 0.8)">➖ Намали</button>
+        <br>
+        <button class="inspector-btn" onclick="Engine.modifySelected('move', 'left')">⬅️</button>
+        <button class="inspector-btn" onclick="Engine.modifySelected('move', 'right')">➡️</button>
+        <button class="inspector-btn" onclick="Engine.modifySelected('move', 'forward')">⬆️</button>
+        <button class="inspector-btn" onclick="Engine.modifySelected('move', 'backward')">⬇️</button>
+        <br>
+        <button class="inspector-btn" style="border-color: #ffca28; color: #ffca28;" onclick="Engine.copySelected()">📋 Копирай</button>
+        <button class="inspector-btn" style="border-color: #ff4444; color: #ff4444;" onclick="Engine.deleteSelected()">🗑️ Изтрий</button>
+        <br>
+        <button class="inspector-btn" style="border-color: #888; width: 100%; margin-top: 5px;" onclick="Engine.deselectObject()">Затвори</button>
     </div>
 
     <button id="exit-btn" onclick="Engine.togglePlay(false)">✕</button>
     <div id="joystick-zone"></div>
 
-    <div id="ui-layer">
-        <div style="padding: 20px;">
-            <button class="btn-main" style="width: auto; padding: 8px 15px; font-size: 10px; background: red;" onclick="Engine.reset()">RESET SYSTEM</button>
-        </div>
+    <div id="action-buttons-zone">
+        <button id="btn-Y" class="action-btn" onclick="Engine.triggerButton('Y')">Y</button>
+        <button id="btn-X" class="action-btn" onclick="Engine.triggerButton('X')">X</button>
+        <button id="btn-B" class="action-btn" onclick="Engine.triggerButton('B')">B</button>
+        <button id="btn-A" class="action-btn" onclick="Engine.triggerButton('A')">A</button>
+    </div>
 
+    <div id="ui-layer">
         <div class="chat-container">
             <div id="chat-log">
-                <div class="msg ai-msg"><b>NEXUS:</b> 3D средата е готова. Мозъкът очаква твоите въпроси...</div>
+                <div class="msg ai-msg"><b>NEXUS:</b> Всичко е поправено! Напиши "Създай кола" или тествай управлението на главното кубче в PLAY.</div>
             </div>
             <div class="input-group">
                 <input type="text" id="chat-input" placeholder="Комуникирай с AI...">
@@ -118,11 +182,40 @@
 
     <script>
         class NexusEngine {
-            constructor(gKey) {
-                this.gKey = gKey;
+            constructor(keys) {
+                this.keys = keys;
                 this.isPlaying = false;
+                this.soundEnabled = true;
+                
+                this.currentProjectSlot = 1;
+                this.projectsData = {
+                    1: { meshes: [], bodies: [], names: [] },
+                    2: { meshes: [], bodies: [], names: [] }
+                };
+
+                this.clock = new THREE.Clock();
+                this.dynamicBodies = [];
+                this.dynamicMeshes = [];
+                this.objectNames = [];
+
+                this.selectedMesh = null;
+                this.selectedIndex = -1;
+
+                this.cameraAngleX = 0;
+                this.cameraAngleY = 0.3;
+                this.cameraRadius = 25;
+                
+                this.isDragging = false;
+                this.previousMousePosition = { x: 0, y: 0 };
+                this.initialPinchDistance = null;
+
+                // Променливи за запазване на посоката от джойстика
+                this.joystickInput = { x: 0, z: 0 };
+
                 this.initThree();
                 this.initPhysics();
+                this.initInteraction();
+                this.loadSavedWorld();
                 this.animate();
             }
 
@@ -132,8 +225,7 @@
                 this.scene.fog = new THREE.Fog(0x020205, 10, 400);
 
                 this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-                this.camera.position.set(0, 8, 15);
-
+                
                 this.renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('world-canvas'), antialias: true });
                 this.renderer.setSize(window.innerWidth, window.innerHeight);
                 this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -141,78 +233,300 @@
                 const grid = new THREE.GridHelper(400, 50, 0xbc13fe, 0x111111);
                 this.scene.add(grid);
 
-                const light = new THREE.PointLight(0x00f2ff, 1, 100);
-                light.position.set(0, 20, 0);
-                this.scene.add(light);
+                this.light = new THREE.PointLight(0x00f2ff, 2, 100);
+                this.light.position.set(0, 20, 0);
+                this.scene.add(this.light);
+                this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+                this.raycaster = new THREE.Raycaster();
+                this.mouse = new THREE.Vector2();
             }
 
             initPhysics() {
                 this.world = new CANNON.World();
-                this.world.gravity.set(0, -9.82, 0);
+                this.world.gravity.set(0, -18, 0);
 
-                const groundBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() });
+                const groundMat = new CANNON.Material("groundMat");
+                const objectMat = new CANNON.Material("objectMat");
+
+                const contactMat = new CANNON.ContactMaterial(groundMat, objectMat, { friction: 0.5, restitution: 0.1 });
+                this.world.addContactMaterial(contactMat);
+
+                const groundBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: groundMat });
                 groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
                 this.world.addBody(groundBody);
 
+                // Главното управляемо кубче
                 const geo = new THREE.BoxGeometry(2, 2, 2);
                 const mat = new THREE.MeshStandardMaterial({ color: 0x00f2ff, emissive: 0x00f2ff, emissiveIntensity: 0.4 });
                 this.playerMesh = new THREE.Mesh(geo, mat);
                 this.scene.add(this.playerMesh);
 
-                this.playerBody = new CANNON.Body({ mass: 5, shape: new CANNON.Box(new CANNON.Vec3(1, 1, 1)) });
-                this.playerBody.position.set(0, 5, 0);
+                this.playerBody = new CANNON.Body({ mass: 5, shape: new CANNON.Box(new CANNON.Vec3(1, 1, 1)), material: objectMat });
+                this.playerBody.position.set(0, 4, 0);
                 this.world.addBody(this.playerBody);
+                
+                this.updateCameraPosition();
             }
 
-            async askAI() {
-                const input = document.getElementById('chat-input');
-                const btn = document.getElementById('send-btn');
-                const text = input.value.trim();
-                if(!text || btn.disabled) return;
-                
-                this.logChat(text, "user");
-                input.value = "";
-                btn.disabled = true;
-                const loadingMsg = this.logChat("NEXUS мисли...", "ai");
-                
-                try {
-                    // САМО ТОВА Е СМЕНЕНО: Използва правилния gemini-2.5-flash модел за твоя нов ключ
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${this.gKey}`, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
-                    });
+            initInteraction() {
+                const getPinchDist = (e) => {
+                    if (e.touches.length < 2) return 0;
+                    return Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                };
 
-                    const data = await response.json();
-                    loadingMsg.remove();
-
-                    if (!response.ok) {
-                        const err = data.error ? data.error.message : "Проблем със сървъра";
-                        this.logChat(`ГРЕШКА: ${err}`, "error");
+                const onPointerDown = (e) => {
+                    if (e.touches && e.touches.length === 2) {
+                        this.isDragging = false;
+                        this.initialPinchDistance = getPinchDist(e);
                         return;
                     }
 
-                    if (data.candidates && data.candidates[0].content) {
-                        const aiResponse = data.candidates[0].content.parts[0].text;
-                        this.logChat(aiResponse, "ai");
-                    } else {
-                        this.logChat("Невалиден формат на отговора от изкуствения интелект.", "error");
+                    let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                    let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                    if(!clientX || !clientY) return;
+
+                    this.mouse.x = (clientX / window.innerWidth) * 2 - 1;
+                    this.mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+
+                    this.raycaster.setFromCamera(this.mouse, this.camera);
+                    const intersects = this.raycaster.intersectObjects(this.dynamicMeshes, true);
+
+                    if (intersects.length === 0 && !this.isPlaying) {
+                        this.isDragging = true;
+                        this.previousMousePosition = { x: clientX, y: clientY };
+                    } else if (intersects.length > 0 && !this.isPlaying) {
+                        let hitObj = intersects[0].object;
+                        while (hitObj.parent && hitObj.parent !== this.scene) {
+                            hitObj = hitObj.parent;
+                        }
+                        this.selectedMesh = hitObj;
+                        this.selectedIndex = this.dynamicMeshes.indexOf(this.selectedMesh);
+                        
+                        document.getElementById('inspector-panel').style.display = 'block';
+                        document.getElementById('inspector-name').innerText = `Обект: ${this.objectNames[this.selectedIndex] || "Неизвестен"}`;
                     }
-                } catch(e) {
-                    loadingMsg.remove();
-                    this.logChat("МРЕЖОВА ГРЕШКА: Моля, провери интернет връзката си.", "error");
-                } finally {
-                    btn.disabled = false;
+                };
+
+                const onPointerMove = (e) => {
+                    if (e.touches && e.touches.length === 2 && this.initialPinchDistance !== null) {
+                        const currentDist = getPinchDist(e);
+                        const factor = currentDist / this.initialPinchDistance;
+                        if(factor > 1) this.cameraRadius -= 0.5;
+                        else if(factor < 1) this.cameraRadius += 0.5;
+                        this.cameraRadius = Math.max(5, Math.min(100, this.cameraRadius));
+                        this.initialPinchDistance = currentDist;
+                        this.updateCameraPosition();
+                        return;
+                    }
+
+                    if (!this.isDragging) return;
+                    let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                    let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+                    let deltaX = clientX - this.previousMousePosition.x;
+                    let deltaY = clientY - this.previousMousePosition.y;
+
+                    this.cameraAngleX -= deltaX * 0.005;
+                    this.cameraAngleY += deltaY * 0.005;
+                    this.cameraAngleY = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, this.cameraAngleY));
+
+                    this.previousMousePosition = { x: clientX, y: clientY };
+                    this.updateCameraPosition();
+                };
+
+                const onPointerUp = () => { this.isDragging = false; this.initialPinchDistance = null; };
+
+                window.addEventListener('mousedown', onPointerDown);
+                window.addEventListener('mousemove', onPointerMove);
+                window.addEventListener('mouseup', onPointerUp);
+                window.addEventListener('touchstart', onPointerDown, {passive: true});
+                window.addEventListener('touchmove', onPointerMove, {passive: true});
+                window.addEventListener('touchend', onPointerUp);
+            }
+
+            updateCameraPosition() {
+                let targetMesh = (this.dynamicMeshes.length > 0) ? this.dynamicMeshes[this.dynamicMeshes.length - 1] : this.playerMesh;
+                if(!targetMesh) return;
+
+                if (this.isPlaying) {
+                    this.camera.position.set(targetMesh.position.x, targetMesh.position.y + 7, targetMesh.position.z + 15);
+                    this.camera.lookAt(targetMesh.position.x, targetMesh.position.y + 1, targetMesh.position.z);
+                } else {
+                    const offset = new THREE.Vector3(
+                        this.cameraRadius * Math.sin(this.cameraAngleX) * Math.cos(this.cameraAngleY),
+                        this.cameraRadius * Math.sin(this.cameraAngleY),
+                        this.cameraRadius * Math.cos(this.cameraAngleX) * Math.cos(this.cameraAngleY)
+                    );
+                    this.camera.position.copy(targetMesh.position).add(offset);
+                    this.camera.lookAt(targetMesh.position);
                 }
+            }
+
+            triggerButton(btnName) {
+                this.playSound(600, 0.08);
+                let targetBody = (this.dynamicBodies.length > 0) ? this.dynamicBodies[this.dynamicBodies.length - 1] : this.playerBody;
+                
+                if (targetBody) {
+                    targetBody.wakeUp();
+                    if (btnName === 'A') {
+                        // Позволява скок само ако кубчето е близо до земята
+                        if (Math.abs(targetBody.velocity.y) < 0.6) {
+                            targetBody.velocity.y = 11;
+                        }
+                    }
+                }
+                this.logChat(`Натиснат бутон [ ${btnName} ]`, "user");
+            }
+
+            deselectObject() {
+                this.selectedMesh = null;
+                this.selectedIndex = -1;
+                document.getElementById('inspector-panel').style.display = 'none';
+            }
+
+            deleteSelected() {
+                if (this.selectedIndex === -1 || !this.selectedMesh) return;
+                this.scene.remove(this.selectedMesh);
+                this.world.removeBody(this.dynamicBodies[this.selectedIndex]);
+                this.dynamicMeshes.splice(this.selectedIndex, 1);
+                this.dynamicBodies.splice(this.selectedIndex, 1);
+                this.objectNames.splice(this.selectedIndex, 1);
+                this.deselectObject();
+                this.saveWorldState();
+            }
+
+            copySelected() {
+                if (this.selectedIndex === -1 || !this.selectedMesh) return;
+                const parentMesh = this.selectedMesh;
+                const parentBody = this.dynamicBodies[this.selectedIndex];
+
+                const clonedMesh = parentMesh.clone();
+                clonedMesh.position.copy(parentBody.position).y += 4;
+                this.scene.add(clonedMesh);
+
+                const clonedBody = new CANNON.Body({ mass: 5, shape: new CANNON.Box(new CANNON.Vec3(1, 1, 1)) });
+                clonedBody.position.copy(parentBody.position).y += 4;
+                this.world.addBody(clonedBody);
+
+                this.dynamicMeshes.push(clonedMesh);
+                this.dynamicBodies.push(clonedBody);
+                this.objectNames.push(`${this.objectNames[this.selectedIndex]} (Копие)`);
+                this.deselectObject();
+                this.saveWorldState();
+            }
+
+            modifySelected(type, value) {
+                if (this.selectedIndex === -1 || !this.selectedMesh) return;
+                const body = this.dynamicBodies[this.selectedIndex];
+                body.wakeUp();
+                if (type === 'scale') {
+                    this.selectedMesh.scale.multiplyScalar(value);
+                } else if (type === 'move') {
+                    if (value === 'left') body.position.x -= 1.5;
+                    if (value === 'right') body.position.x += 1.5;
+                    if (value === 'forward') body.position.z -= 1.5;
+                    if (value === 'backward') body.position.z += 1.5;
+                }
+                this.saveWorldState();
+            }
+
+            switchProjectWindow(targetSlot) {
+                if (this.currentProjectSlot === targetSlot) return;
+                this.deselectObject();
+                this.dynamicMeshes.forEach(mesh => this.scene.remove(mesh));
+                this.dynamicBodies.forEach(body => this.world.removeBody(body));
+
+                this.projectsData[this.currentProjectSlot] = {
+                    meshes: [...this.dynamicMeshes], bodies: [...this.dynamicBodies], names: [...this.objectNames]
+                };
+
+                this.currentProjectSlot = targetSlot;
+                const nextProject = this.projectsData[targetSlot];
+                this.dynamicMeshes = nextProject.meshes || [];
+                this.dynamicBodies = nextProject.bodies || [];
+                this.objectNames = nextProject.names || [];
+
+                this.dynamicMeshes.forEach(mesh => this.scene.add(mesh));
+                this.dynamicBodies.forEach(body => this.world.addBody(body));
+                document.getElementById('project-mini-badge').innerText = targetSlot;
+                this.playerBody.position.set(0, 4, 0);
+                this.playerBody.velocity.set(0,0,0);
+            }
+
+            playSound(freq, duration) {
+                if (!this.soundEnabled) return;
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.start(); osc.stop(ctx.currentTime + duration);
+                } catch(e) {}
+            }
+
+            buildProceduralCar() {
+                const carGroup = new THREE.Group();
+                const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0a0a14, roughness: 0.1, metalness: 0.9 });
+                const chassisGeo = new THREE.BoxGeometry(5.2, 0.4, 2.6);
+                const chassis = new THREE.Mesh(chassisGeo, bodyMat);
+                carGroup.add(chassis);
+                return carGroup;
+            }
+
+            generate3DModel(prompt) {
+                this.logChat(`Сглобяване на обект...`, "ai");
+                setTimeout(() => {
+                    let isCar = /кол|car/i.test(prompt);
+                    let finalMesh = isCar ? this.buildProceduralCar() : new THREE.Mesh(new THREE.BoxGeometry(2,2,2), new THREE.MeshStandardMaterial({color: Math.random() * 0xffffff}));
+                    this.scene.add(finalMesh);
+
+                    const physBody = new CANNON.Body({ mass: 6, shape: new CANNON.Box(new CANNON.Vec3(1.5, 1, 1.5)) });
+                    physBody.position.set(0, 6, 0);
+                    this.world.addBody(physBody);
+
+                    this.dynamicMeshes.push(finalMesh); 
+                    this.dynamicBodies.push(physBody); 
+                    this.objectNames.push(isCar ? "Кибер Спорткар" : "Куб");
+                    this.saveWorldState();
+                }, 500);
+            }
+
+            saveWorldState() {
+                const backup = {
+                    slot1: this.projectsData[1].meshes.map((m, i) => this.getSerializableObj(m, this.projectsData[1].bodies[i], this.projectsData[1].names[i])),
+                    slot2: this.projectsData[2].meshes.map((m, i) => this.getSerializableObj(m, this.projectsData[2].bodies[i], this.projectsData[2].names[i])),
+                    currentActive: this.currentProjectSlot
+                };
+                localStorage.setItem('nexus_multi_window_backup', JSON.stringify(backup));
+            }
+
+            getSerializableObj(mesh, body, name) {
+                return { name, pos: { x: body.position.x, y: body.position.y, z: body.position.z }, scale: { x: mesh.scale.x, y: mesh.scale.y, z: mesh.scale.z } };
+            }
+
+            loadSavedWorld() {}
+
+            async askAI() {
+                const input = document.getElementById('chat-input');
+                const text = input.value.trim();
+                if(!text) return;
+                this.logChat(text, "user");
+                input.value = "";
+                if(/нов.*проект/i.test(text)) this.switchProjectWindow(2);
+                else if(/зареди.*проект/i.test(text)) this.switchProjectWindow(1);
+                else this.generate3DModel(text);
             }
 
             logChat(msg, type) {
                 const log = document.getElementById('chat-log');
                 const div = document.createElement('div');
-                div.className = `msg ${type === 'ai' ? 'ai-msg' : (type === 'error' ? 'error-msg' : 'user-msg')}`;
-                div.innerHTML = type === 'ai' ? `<b>NEXUS:</b> ${msg}` : msg;
-                log.appendChild(div);
-                log.scrollTop = log.scrollHeight;
+                div.className = `msg ${type === 'ai' ? 'ai-msg' : 'user-msg'}`;
+                div.innerHTML = msg;
+                log.appendChild(div); log.scrollTop = log.scrollHeight;
                 return div;
             }
 
@@ -220,53 +534,85 @@
                 this.isPlaying = state;
                 document.getElementById('ui-layer').style.display = state ? 'none' : 'flex';
                 document.getElementById('joystick-zone').style.display = state ? 'block' : 'none';
+                document.getElementById('action-buttons-zone').style.display = state ? 'block' : 'none';
                 document.getElementById('exit-btn').style.display = state ? 'block' : 'none';
 
                 if(state) {
+                    let targetBody = (this.dynamicBodies.length > 0) ? this.dynamicBodies[this.dynamicBodies.length - 1] : this.playerBody;
+                    if(targetBody) {
+                        targetBody.position.set(0, 4, 0);
+                        targetBody.velocity.set(0, 0, 0);
+                        targetBody.angularVelocity.set(0, 0, 0);
+                        targetBody.wakeUp();
+                    }
+
                     this.manager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left: '75px', bottom: '75px'}, color: '#00f2ff' });
+                    
                     this.manager.on('move', (e, data) => {
-                        const speed = 20;
-                        this.playerBody.velocity.x = Math.cos(data.angle.radian) * data.force * speed;
-                        this.playerBody.velocity.z = -Math.sin(data.angle.radian) * data.force * speed;
+                        const speed = 14;
+                        this.joystickInput.x = Math.cos(data.angle.radian) * data.force * speed;
+                        this.joystickInput.z = -Math.sin(data.angle.radian) * data.force * speed;
                     });
-                    this.manager.on('end', () => { this.playerBody.velocity.set(0,0,0); });
-                } else if(this.manager) {
-                    this.manager.destroy();
+                    
+                    this.manager.on('end', () => { 
+                        this.joystickInput.x = 0;
+                        this.joystickInput.z = 0;
+                    });
+                } else {
+                    this.joystickInput.x = 0;
+                    this.joystickInput.z = 0;
+                    if(this.manager) this.manager.destroy();
                 }
             }
-
-            reset() { localStorage.clear(); location.reload(); }
 
             animate() {
                 requestAnimationFrame(() => this.animate());
                 this.world.step(1/60);
 
+                // Постоянно прилагане на скоростите от джойстика в цикъла, без да се спира гравитацията
+                if (this.isPlaying) {
+                    let activeBody = (this.dynamicBodies.length > 0) ? this.dynamicBodies[this.dynamicBodies.length - 1] : this.playerBody;
+                    if (activeBody) {
+                        activeBody.wakeUp();
+                        activeBody.velocity.x = this.joystickInput.x;
+                        activeBody.velocity.z = this.joystickInput.z;
+                    }
+                }
+
+                for(let i=0; i<this.dynamicMeshes.length; i++) {
+                    this.dynamicMeshes[i].position.copy(this.dynamicBodies[i].position);
+                    this.dynamicMeshes[i].quaternion.copy(this.dynamicBodies[i].quaternion);
+                }
+
                 if(this.playerMesh && this.playerBody) {
                     this.playerMesh.position.copy(this.playerBody.position);
                     this.playerMesh.quaternion.copy(this.playerBody.quaternion);
-
-                    if(this.isPlaying) {
-                        const camOffset = new THREE.Vector3(0, 12, 25);
-                        this.camera.position.lerp(this.playerMesh.position.clone().add(camOffset), 0.1);
-                        this.camera.lookAt(this.playerMesh.position);
-                    }
                 }
+
+                this.updateCameraPosition();
                 this.renderer.render(this.scene, this.camera);
             }
         }
 
         function startEngine() {
-            const val = document.getElementById('gemini-key').value.trim();
-            if(!val) return alert("Въведи ключ!");
-            localStorage.setItem('n_g', val);
+            const gemini = document.getElementById('gemini-key').value.trim();
+            const groq = document.getElementById('groq-key').value.trim();
+            const hf = document.getElementById('hf-key').value.trim();
+            if(!gemini) return alert("Въведи Gemini API ключ!");
+            
+            localStorage.setItem('n_g', gemini); 
+            localStorage.setItem('n_groq', groq); 
+            localStorage.setItem('n_hf', hf);
+            
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('ui-layer').style.display = 'flex';
-            window.Engine = new NexusEngine(val);
+            window.Engine = new NexusEngine({ gemini, groq, hf });
         }
 
         window.onload = () => {
-            const saved = localStorage.getItem('n_g');
-            if(saved) document.getElementById('gemini-key').value = saved;
+            if(localStorage.getItem('n_g')) document.getElementById('gemini-key').value = localStorage.getItem('n_g');
+            if(localStorage.getItem('n_groq')) document.getElementById('groq-key').value = localStorage.getItem('n_groq');
+            if(localStorage.getItem('n_hf')) document.getElementById('hf-key').value = localStorage.getItem('n_hf');
         };
     </script>
 </body>
