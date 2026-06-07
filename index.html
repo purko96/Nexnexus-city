@@ -157,6 +157,10 @@
             overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;
             max-height: 100%;
         }
+        .anim-list-scroll {
+            overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;
+            max-height: 100%;
+        }
         .anim-item-btn {
             background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
             color: #e0e0e0; padding: 12px 15px; text-align: left; cursor: pointer;
@@ -1192,6 +1196,11 @@
                     this.hubActor.scale.set(0.45, 0.45, 0.45);
                     this.hubActor.position.set(0, 0, 0);
                     this.hubScene.add(this.hubActor);
+                    
+                    // ДОБАВЕН СКЕЛЕТЕН ПОМОЩНИК (SKELETON HELPER) ЗА ПРЕГЛЕД НА СКЕЛЕТА
+                    const helper = new THREE.SkeletonHelper(this.hubActor);
+                    helper.material.linewidth = 3;
+                    this.hubScene.add(helper);
                     
                     this.hubMixer = new THREE.AnimationMixer(this.hubActor);
                     this.hubAnims = gltf.animations;
