@@ -157,10 +157,6 @@
             overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;
             max-height: 100%;
         }
-        .anim-list-scroll {
-            overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;
-            max-height: 100%;
-        }
         .anim-item-btn {
             background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
             color: #e0e0e0; padding: 12px 15px; text-align: left; cursor: pointer;
@@ -317,7 +313,7 @@
     <div id="ui-layer">
         <div class="chat-container">
             <div id="chat-log">
-                <div class="msg ai-msg"><b>NEXUS:</b> Системата е готова. Напиши думата <b>библиотека</b> тук в чата, за да отвориш мениджъра за модели.</div>
+                <div class="msg ai-msg"><b>NEXUS:</b> Системата е готова. Напиши думата <b>библиотека</b> тук in чата, за да отвориш мениджъра за модели.</div>
             </div>
             <div class="input-group">
                 <input type="text" id="chat-input" placeholder="Комуникирай с AI (напиши библиотека)...">
@@ -423,7 +419,7 @@
                     "Romantic waving", "Сядане на трон", "Мислителна поза", "Падане в безсъзнание", "Бавен епичен ход",
                     "Шекспирова реч", "Поклон перед публика", "Изплашено бягство", "Посочване с ярост", "Заспиване на легло",
                     "Прегръдка в близък план", "РРъкостискане", "Четене на тайна книга", "Пиене от чаша", "Кашляне в прахта",
-                    "Гледане към небето", "Избърсване на сълза", "Тайнствено шепнене", "Внезапен шок", "Победоносно вдигане на ръце"
+                    "Гледане към небето", "Избърсване на сълза", "Тайнствено шепнене", "Внезапен шок", "Побединосно вдигане на ръце"
                 ];
                 for (let i = 501; i <= 1000; i++) {
                     let baseName = movieTypes[(i - 501) % movieTypes.length];
@@ -1196,6 +1192,9 @@
                     this.hubActor.scale.set(0.45, 0.45, 0.45);
                     this.hubActor.position.set(0, 0, 0);
                     this.hubScene.add(this.hubActor);
+                    
+                    // ДОБАВЕНО: Принудително обновяване на матриците, за да се генерира и визуализира скелетът правилно
+                    this.hubActor.updateMatrixWorld(true);
                     
                     // ДОБАВЕН СКЕЛЕТЕН ПОМОЩНИК (SKELETON HELPER) ЗА ПРЕГЛЕД НА СКЕЛЕТА
                     const helper = new THREE.SkeletonHelper(this.hubActor);
