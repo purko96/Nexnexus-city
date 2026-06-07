@@ -142,7 +142,6 @@
         .btn-asset-item { background: rgba(0, 242, 255, 0.08); border: 1px solid var(--accent); color: white; padding: 15px 10px; border-radius: 10px; cursor: pointer; text-align: center; font-weight: bold; font-size: 13px; font-family: 'Roboto'; transition: 0.2s; }
         .btn-asset-item:hover { background: var(--accent); color: black; }
 
-        /* Оптимизиран и фиксиран Анимационен Хъб */
         #animation-hub {
             position: fixed; z-index: 4000; top: 0; left: 0; width: 100%; height: 100%;
             background: #040408; display: none; flex-direction: row; padding: 20px;
@@ -180,11 +179,10 @@
         .anim-control-row label { font-size: 11px; color: #8a8a9e; font-family: 'Orbitron'; letter-spacing: 1px; }
         .anim-slider { width: 100%; accent-color: var(--accent); cursor: pointer; }
 
-        /* МАГИЯТА: CSS Правила специално за екрани на ТЕЛЕФОНИ */
         @media (max-width: 768px) {
             #animation-hub {
                 flex-direction: column;
-                overflow-y: auto; /* Позволява на целия хъб да се превърта вертикално */
+                overflow-y: auto;
                 padding: 10px;
                 gap: 10px;
             }
@@ -197,10 +195,10 @@
             .anim-preview-center {
                 flex: none;
                 width: 100%;
-                height: 300px; /* Фиксирана хубава височина за 3D прозореца на телефон */
+                height: 300px;
             }
             .anim-list-scroll {
-                max-height: 200px; /* Спира разтягането на списъка извън кутията му */
+                max-height: 200px;
             }
         }
     </style>
@@ -420,7 +418,7 @@
                     "Драматичен плач", "Силен актьорски смях", "Диалог с жестове", "Уплашено оглеждане", "Военен поздрав",
                     "Romantic waving", "Сядане на трон", "Мислителна поза", "Падане в безсъзнание", "Бавен епичен ход",
                     "Шекспирова реч", "Поклон перед публика", "Изплашено бягство", "Посочване с ярост", "Заспиване на легло",
-                    "Прегръдка в близък план", "Ръкостискане", "Четене на тайна книга", "Пиене от чаша", "Кашляне в прахта",
+                    "Прегръдка в близък план", "РРъкостискане", "Четене на тайна книга", "Пиене от чаша", "Кашляне в прахта",
                     "Гледане към небето", "Избърсване на сълза", "Тайнствено шепнене", "Внезапен шок", "Победоносно вдигане на ръце"
                 ];
                 for (let i = 501; i <= 1000; i++) {
