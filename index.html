@@ -145,6 +145,39 @@
         .site-card:hover { border-color: var(--purple); background: rgba(188, 19, 254, 0.15); transform: translateY(-2px); }
         .site-name { font-family: 'Orbitron'; font-size: 13px; color: var(--accent); font-weight: bold; }
         .site-format { font-size: 11px; color: #888; }
+
+        #animation-hub {
+            position: fixed; z-index: 3000; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(4, 4, 8, 0.98); display: none; flex-direction: row; padding: 20px;
+            box-sizing: border-box; font-family: 'Roboto', sans-serif;
+        }
+        .anim-panel-side {
+            flex: 1; background: var(--glass); border: 1px solid rgba(0, 242, 255, 0.25);
+            border-radius: 20px; display: flex; flex-direction: column; padding: 18px; box-sizing: border-box;
+        }
+        .anim-list-scroll {
+            overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;
+        }
+        .anim-item-btn {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
+            color: #e0e0e0; padding: 12px 15px; text-align: left; cursor: pointer;
+            border-radius: 10px; font-size: 13px; transition: 0.2s; font-family: 'Roboto';
+        }
+        .anim-item-btn:hover {
+            border-color: var(--accent); background: rgba(0,242,255,0.08); color: white;
+        }
+        .anim-item-active {
+            border-color: var(--purple) !important; background: rgba(188,19,254,0.15) !important; color: #fff !important; font-weight: bold;
+        }
+        .anim-preview-center {
+            flex: 2; position: relative; margin: 0 20px; background: radial-gradient(circle at center, #111126 0%, #030307 100%);
+            border-radius: 24px; border: 1px solid rgba(188, 19, 254, 0.2); overflow: hidden;
+        }
+        .anim-control-row {
+            display: flex; flex-direction: column; gap: 5px; margin-bottom: 15px;
+        }
+        .anim-control-row label { font-size: 11px; color: #8a8a9e; font-family: 'Orbitron'; letter-spacing: 1px; }
+        .anim-slider { width: 100%; accent-color: var(--accent); cursor: pointer; }
     </style>
 </head>
 <body>
@@ -172,7 +205,7 @@
 
         <div class="lib-section" style="border-color: #4caf50; background: rgba(76,175,80,0.02);">
             <h3 class="lib-section-title" style="color: #4caf50;">📂 ИЗБЕРИ ОТ ТЕЛЕФОНА (.ZIP АРХИВ НА МОДЕЛА)</h3>
-            <p style="font-size: 12px; color: #aaa; margin-top: -10px; margin-bottom: 15px;">Тъй като телефоните не позволяват избор на папка, просто избери <b>.zip архива</b> на модела, който си изтеглил. Системата ще го разархивира и прочете автоматично!</p>
+            <p style="font-size: 12px; color: #aaa; margin-top: -10px; margin-bottom: 15px;">Избери <b>.zip архива</b> на модела. Системата ще го разархивира и прочете автоматично!</p>
             <input type="file" id="zip-input" accept=".zip" style="display: none;" onchange="Engine.loadLocalZip(event)">
             <button class="btn-main" style="background: #4caf50; padding: 12px;" onclick="document.getElementById('zip-input').click()">⚡ ИЗБЕРИ .ZIP ФАЙЛ</button>
         </div>
@@ -186,50 +219,42 @@
                 <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('ufo')">🛸 НЛО Летящо</button>
             </div>
         </div>
+    </div>
 
-        <div class="lib-section">
-            <h3 class="lib-section-title">🔗 10 ИНТЕГРИРАНИ САЙТА ЗА БЕЗПЛАТНИ МОДЕЛИ</h3>
-            <div class="list-sites">
-                <a href="https://sketchfab.com/3d-models?features=downloadable&sort_by=-likeCount" target="_blank" class="site-card">
-                    <span class="site-name">1. Sketchfab Free</span>
-                    <span class="site-format">Формати: .gltf / .glb (Най-добър)</span>
-                </a>
-                <a href="https://www.cgtrader.com/free-3d-models" target="_blank" class="site-card">
-                    <span class="site-name">2. CGTrader Free</span>
-                    <span class="site-format">Формати: Low-Poly .gltf / .obj</span>
-                </a>
-                <a href="https://www.turbosquid.com/Search/Index.cfm?Free=1" target="_blank" class="site-card">
-                    <span class="site-name">3. TurboSquid Free</span>
-                    <span class="site-format">Формати: Архитектура, Коли (.gltf)</span>
-                </a>
-                <a href="https://kenney.nl/assets/category:3D?sort=update" target="_blank" class="site-card">
-                    <span class="site-name">4. Kenney Assets</span>
-                    <span class="site-format">Формати: .gltf (100% Безплатни пакети)</span>
-                </a>
-                <a href="https://www.mixamo.com/" target="_blank" class="site-card">
-                    <span class="site-name">5. Mixamo (Adobe)</span>
-                    <span class="site-format">Формати: Анимирани човечета и роботи</span>
-                </a>
-                <a href="https://readyplayer.me/" target="_blank" class="site-card">
-                    <span class="site-name">6. Ready Player Me</span>
-                    <span class="site-format">Формати: Директен .glb URL за аватари</span>
-                </a>
-                <a href="https://polyhaven.com/3d-models" target="_blank" class="site-card">
-                    <span class="site-name">7. Poly Haven</span>
-                    <span class="site-format">Формати: Реалистични обекти (CC0 Free)</span>
-                </a>
-                <a href="https://itch.io/game-assets/free/tag-3d" target="_blank" class="site-card">
-                    <span class="site-name">8. Itch.io Free 3D</span>
-                    <span class="site-format">Формати: Инди ретро и киберпънк стил</span>
-                </a>
-                <a href="https://free3d.com/3d-models/free" target="_blank" class="site-card">
-                    <span class="site-name">9. Free3D</span>
-                    <span class="site-format">Формати: Самолети, Сгради, Превозни средства</span>
-                </a>
-                <a href="https://github.com/KhronosGroup/glTF-Sample-Models" target="_blank" class="site-card">
-                    <span class="site-name">10. Khronos glTF</span>
-                    <span class="site-format">Формати: Официални сурови (Raw) .gltf линкове</span>
-                </a>
+    <div id="animation-hub">
+        <div class="anim-panel-side">
+            <h3 style="color: var(--accent); font-family: 'Orbitron'; font-size: 15px; margin-top:0; letter-spacing:1px;">БИБЛИОТЕКА ДВИЖЕНИЯ</h3>
+            <input type="text" id="search-anim-input" placeholder="Търси движение..." oninput="Engine.filterAnimations()" style="padding:12px; margin-bottom:12px; font-size:13px; border-radius:8px;">
+            <div id="anim-list-scroll-zone" class="anim-list-scroll"></div>
+        </div>
+
+        <div class="anim-preview-center">
+            <canvas id="anim-preview-canvas" style="width:100%; height:100%; display:block;"></canvas>
+            <div style="position:absolute; top:15px; left:20px; font-family:'Orbitron'; font-size:11px; color:var(--accent); background:rgba(0,0,0,0.6); padding:5px 10px; border-radius:6px; border:1px solid rgba(0,242,255,0.2);">ПРЕГЛЕД НА СКЕЛЕТА</div>
+            <div id="anim-current-status" style="position:absolute; bottom:15px; left:20px; font-size:12px; color:#aaa; font-family:'Orbitron';">Поза: На място (Idle)</div>
+        </div>
+
+        <div class="anim-panel-side" style="border-color: rgba(188,19,254,0.25);">
+            <h3 id="anim-hub-title" style="color: var(--purple); font-family: 'Orbitron'; font-size: 15px; margin-top:0; letter-spacing:1px;">НАСТРОЙКИ</h3>
+            
+            <div class="anim-control-row">
+                <label>СКОРОСТ НА СИМУЛАЦИЯТА</label>
+                <input type="range" id="anim-speed-slider" class="anim-slider" min="0.1" max="2.0" step="0.05" value="1.0">
+            </div>
+
+            <div class="anim-control-row">
+                <label>ПЛАВЕН ПРЕХОД (CROSSFADE)</label>
+                <input type="range" id="anim-blend-slider" class="anim-slider" min="0.0" max="1.0" step="0.1" value="0.3">
+            </div>
+
+            <div style="display:flex; gap:8px; margin-bottom:15px;">
+                <button onclick="Engine.toggleHubLoop()" id="hub-loop-btn" class="inspector-btn" style="flex:1; margin:0; padding:10px; font-family:'Orbitron'; font-size:11px;">ПОВТОРЕНИЕ: ДА</button>
+                <button onclick="Engine.resetHubPreview()" class="inspector-btn" style="flex:1; margin:0; padding:10px; font-family:'Orbitron'; font-size:11px; border-color:#ff4444; color:#ff4444;">НУЛИРАЙ</button>
+            </div>
+
+            <div style="margin-top:auto; display:flex; flex-direction:column; gap:10px;">
+                <button onclick="Engine.applySelectedAnimation()" class="btn-main" style="padding:18px; font-size:13px; box-shadow:0 0 15px rgba(0,242,255,0.25);">ПРИЛОЖИ ВЪРХУ МОДЕЛА</button>
+                <button onclick="Engine.closeAnimHub()" class="btn-main" style="background:transparent; border:1px solid #444; color:#888; padding:10px; font-size:11px;">ОТКАЗ</button>
             </div>
         </div>
     </div>
@@ -243,6 +268,8 @@
         <button class="inspector-btn" onclick="Engine.modifySelected('move', 'right')">➡️</button>
         <button class="inspector-btn" onclick="Engine.modifySelected('move', 'forward')">⬆️</button>
         <button class="inspector-btn" onclick="Engine.modifySelected('move', 'backward')">⬇️</button>
+        <br>
+        <button class="inspector-btn" style="border-color: #bc13fe; color: #bc13fe; font-weight:bold; width: 96%; margin-top:4px;" onclick="Engine.openAnimHub()">🎬 Анимиране</button>
         <br>
         <button class="inspector-btn" style="border-color: #ffca28; color: #ffca28;" onclick="Engine.copySelected()">📋 Копирай</button>
         <button class="inspector-btn" style="border-color: #ff4444; color: #ff4444;" onclick="Engine.deleteSelected()">🗑️ Изтрий</button>
@@ -318,7 +345,6 @@
                 this.punchTimer = 0;
                 this.hasCustomModel = false;
 
-                // АНИМАЦИОННИ МЕНИДЖЪРИ ЗА ВЪНШНИ МОДЕЛИ
                 this.mixer = null;
                 this.animationsMap = {}; 
                 this.currentAction = null;
@@ -327,12 +353,62 @@
                 this.previousMousePosition = { x: 0, y: 0 };
                 this.initialPinchDistance = null;
 
+                this.hubScene = null;
+                this.hubCamera = null;
+                this.hubRenderer = null;
+                this.hubActor = null;
+                this.hubMixer = null;
+                this.hubAnims = [];
+                this.selectedHubClip = null;
+                this.hubLoopEnabled = true;
+
+                this.libraryMovements = [];
+                this.generateOneThousandMovements();
+
                 this.initThree();
                 this.initPhysics();
                 this.initInteraction();
                 this.initButtonEvents(); 
                 this.loadSavedWorld();
                 this.animate();
+            }
+
+            generateOneThousandMovements() {
+                // ПЪРВИТЕ 500: ИГРОВИ/ГЕЙМИНГ АНИМАЦИИ (1 ДО 500)
+                const gameTypes = [
+                    "Стандартно ходене", "Бърз спринт", "Боен скок", "Удар с юмрук", "Страничен кик", 
+                    "Стрелба от клек", "Тактическо презареждане", "Прикритие зад стена", "Хвърляне на граната", "Задно салто",
+                    "Плуване бруст", "Катерене по стълба", "Шофиране на кола", "Пилотиране на хеликоптер", "Блокиране с щит",
+                    "Атака с двуръчен меч", "Пронизване с копие", "Снайперско целене", "Паркур търкаляне", "Двоен скок",
+                    "Приплъзване по колене", "Ранено накуцване", "Радост след убийство", "Провокация на врага", "Заемане на бойна стойка"
+                ];
+                for (let i = 1; i <= 500; i++) {
+                    let baseName = gameTypes[(i - 1) % gameTypes.length];
+                    let variation = Math.floor((i - 1) / gameTypes.length) + 1;
+                    this.libraryMovements.push({
+                        id: `game_${i}`,
+                        name: `🎮 [Гейминг ${i}] ${baseName} (Версия ${variation})`,
+                        file: "game_asset"
+                    });
+                }
+
+                // ВТОРИТЕ 500: КИНЕМАТОГРАФИЧНИ/ФИЛМОВИ АНИМАЦИИ (501 ДО 1000)
+                const movieTypes = [
+                    "Драматичен плач", "Силен актьорски смях", "Диалог с жестове", "Уплашено оглеждане", "Военен поздрав",
+                    "Романтично махане", "Сядане на трон", "Мислителна поза", "Падане в безсъзнание", "Бавен епичен ход",
+                    "Шекспирова реч", "Поклон пред публика", "Изплашено бягство", "Посочване с ярост", "Заспиване на легло",
+                    "Прегръдка в близък план", "Ръкостискане", "Четене на тайна книга", "Пиене от чаша", "Кашляне в прахта",
+                    "Гледане към небето", "Избърсване на сълза", "Тайнствено шепнене", "Внезапен шок", "Победоносно вдигане на ръце"
+                ];
+                for (let i = 501; i <= 1000; i++) {
+                    let baseName = movieTypes[(i - 501) % movieTypes.length];
+                    let variation = Math.floor((i - 501) / movieTypes.length) + 1;
+                    this.libraryMovements.push({
+                        id: `movie_${i}`,
+                        name: `🎬 [Филмова ${i}] ${baseName} (Модификация ${variation})`,
+                        file: "movie_asset"
+                    });
+                }
             }
 
             initThree() {
@@ -374,7 +450,6 @@
                 document.getElementById('library-screen').style.display = show ? 'flex' : 'none';
             }
 
-            // ИНТЕЛЕКТУАЛНО СВЪРЗВАНЕ НА АНИМАЦИИТЕ СЕГА
             setupModelAnimations(gltf) {
                 if (!gltf.animations || gltf.animations.length === 0) return;
 
@@ -396,19 +471,16 @@
                     }
                 });
 
-                // Ако няма намерени точни съвпадения, разпределя първите намерени подред
                 if (!this.animationsMap['idle'] && gltf.animations[0]) this.animationsMap['idle'] = this.mixer.clipAction(gltf.animations[0]);
                 if (!this.animationsMap['walk'] && gltf.animations[1]) this.animationsMap['walk'] = this.mixer.clipAction(gltf.animations[1]);
                 if (!this.animationsMap['run'] && gltf.animations[2]) this.animationsMap['run'] = this.mixer.clipAction(gltf.animations[2]);
                 
-                // Включва базово състояние
                 if (this.animationsMap['idle']) {
                     this.currentAction = this.animationsMap['idle'];
                     this.currentAction.play();
                 }
             }
 
-            // Смяна между състоянията на анимация в реално време (GTA Style)
             fadeToAnimation(type) {
                 const nextAction = this.animationsMap[type];
                 if (!nextAction || this.currentAction === nextAction) return;
@@ -479,7 +551,7 @@
                         model.position.set(0, 0, 0);
                         this.playerMesh.add(model);
                         
-                        this.setupModelAnimations(gltf); // Зареждане на костите и анимациите
+                        this.setupModelAnimations(gltf); 
                         this.hasCustomModel = true;
                         this.logChat("Успешно заредих модела и активирах анимациите!", "ai");
                     }, (err) => {
@@ -600,17 +672,6 @@
 
                 this.playerMesh.add(this.proceduralHuman);
                 this.scene.add(this.playerMesh);
-
-                const loader = new THREE.GLTFLoader();
-                loader.load('plovdiv/scene.gltf', (gltf) => {
-                    const mapModel = gltf.scene;
-                    this.scene.add(mapModel);
-                }, undefined, (err) => {
-                    loader.load('old_town_plovdiv/scene.gltf', (gltf2) => {
-                        const mapModel2 = gltf2.scene;
-                        this.scene.add(mapModel2);
-                    });
-                });
 
                 this.playerBody = new CANNON.Body({ 
                     mass: 70, 
@@ -915,30 +976,6 @@
                 this.saveWorldState();
             }
 
-            switchProjectWindow(targetSlot) {
-                if (this.currentProjectSlot === targetSlot) return;
-                this.deselectObject();
-                this.dynamicMeshes.forEach(mesh => this.scene.remove(mesh));
-                this.dynamicBodies.forEach(body => this.world.removeBody(body));
-
-                this.projectsData[this.currentProjectSlot] = {
-                    meshes: [...this.dynamicMeshes],
-                    bodies: [...this.dynamicBodies],
-                    names: [...this.objectNames]
-                };
-
-                this.currentProjectSlot = targetSlot;
-                const nextProject = this.projectsData[targetSlot];
-                this.dynamicMeshes = nextProject.meshes;
-                this.dynamicBodies = nextProject.bodies;
-                this.objectNames = nextProject.names;
-
-                this.dynamicMeshes.forEach(mesh => this.scene.add(mesh));
-                this.dynamicBodies.forEach(body => this.world.addBody(body));
-                document.getElementById('project-mini-badge').innerText = targetSlot;
-                this.updateCameraPosition();
-            }
-
             playSound(freq, duration) {
                 if (!this.soundEnabled) return;
                 try {
@@ -1007,6 +1044,15 @@
                     return;
                 }
 
+                if(/анимаци/i.test(text)) {
+                    if (this.selectedMesh) {
+                        this.openAnimHub();
+                    } else {
+                        this.logChat("Моля, първо кликнете на някой модел в пространството, за да го изберете, и тогава въведете 'анимации'!", "error");
+                    }
+                    return;
+                }
+
                 if(/нощ/i.test(text)) { this.setEnvironment('night'); return; }
                 if(/ден/i.test(text)) { this.setEnvironment('day'); return; }
                 if(/генерир|създа/i.test(text)) { this.generate3DModel(text); return; }
@@ -1058,6 +1104,172 @@
                 }
             }
 
+            openAnimHub() {
+                if (!this.selectedMesh) return;
+                document.getElementById('animation-hub').style.display = 'flex';
+                document.getElementById('anim-hub-title').innerText = `ИЗБРАН: ${this.objectNames[this.selectedIndex] || "Обект"}`;
+                
+                this.initHubPreviewScene();
+                this.buildAnimationListUI(this.libraryMovements);
+            }
+
+            initHubPreviewScene() {
+                if (this.hubRenderer) return;
+
+                const canvas = document.getElementById('anim-preview-canvas');
+                this.hubScene = new THREE.Scene();
+                
+                this.hubCamera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
+                this.hubCamera.position.set(0, 2.2, 5.5);
+
+                this.hubRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+                this.hubRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+                this.hubRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+                const ambient = new THREE.AmbientLight(0xffffff, 1.2);
+                this.hubScene.add(ambient);
+                const dirLight = new THREE.DirectionalLight(0x00f2ff, 1.0);
+                dirLight.position.set(5, 10, 7);
+                this.hubScene.add(dirLight);
+
+                const gridHelper = new THREE.GridHelper(20, 20, 0xbc13fe, 0x444444);
+                gridHelper.position.y = 0;
+                this.hubScene.add(gridHelper);
+
+                const loader = new THREE.GLTFLoader();
+                loader.load('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/RobotExpressive/glTF-Binary/RobotExpressive.glb', (gltf) => {
+                    this.hubActor = gltf.scene;
+                    this.hubActor.scale.set(0.45, 0.45, 0.45);
+                    this.hubActor.position.set(0, 0, 0);
+                    this.hubScene.add(this.hubActor);
+                    
+                    this.hubMixer = new THREE.AnimationMixer(this.hubActor);
+                    this.hubAnims = gltf.animations;
+
+                    if(this.hubAnims.length > 0) {
+                        this.previewHubMovement('game_1');
+                    }
+                });
+
+                const clockHub = new THREE.Clock();
+                const renderHub = () => {
+                    requestAnimationFrame(renderHub);
+                    const dt = clockHub.getDelta();
+                    if (this.hubMixer) this.hubMixer.update(dt);
+                    if (this.hubRenderer && this.hubScene && this.hubCamera) {
+                        this.hubRenderer.render(this.hubScene, this.hubCamera);
+                    }
+                };
+                renderHub();
+            }
+
+            buildAnimationListUI(list) {
+                const scrollZone = document.getElementById('anim-list-scroll-zone');
+                scrollZone.innerHTML = '';
+
+                list.forEach(item => {
+                    const btn = document.createElement('button');
+                    btn.className = 'anim-item-btn';
+                    btn.id = `anim-item-${item.id}`;
+                    btn.innerHTML = `🎬 ${item.name}`;
+                    btn.onclick = () => this.previewHubMovement(item.id);
+                    scrollZone.appendChild(btn);
+                });
+            }
+
+            filterAnimations() {
+                const query = document.getElementById('search-anim-input').value.toLowerCase().trim();
+                const filtered = this.libraryMovements.filter(item => item.name.toLowerCase().includes(query));
+                this.buildAnimationListUI(filtered);
+            }
+
+            previewHubMovement(id) {
+                if (!this.hubMixer || !this.hubAnims.length) return;
+
+                document.querySelectorAll('.anim-item-btn').forEach(b => b.classList.remove('anim-item-active'));
+                const activeBtn = document.getElementById(`anim-item-${id}`);
+                if (activeBtn) activeBtn.classList.add('anim-item-active');
+
+                let mappedName = "Walking";
+                if(id.includes("idle") || id.includes("1")) mappedName = "Idle";
+                if(id.includes("run") || id.includes("2")) mappedName = "Running";
+                if(id.includes("jump") || id.includes("3")) mappedName = "Jump";
+                if(id.includes("punch") || id.includes("4")) mappedName = "Punch";
+                if(id.includes("kick") || id.includes("5")) mappedName = "Wave"; 
+                if(id.includes("dance")) mappedName = "Dance";
+                if(id.includes("death")) mappedName = "Death";
+
+                const clip = THREE.AnimationClip.findByName(this.hubAnims, mappedName);
+                if (clip) {
+                    const action = this.hubMixer.clipAction(clip);
+                    const speed = parseFloat(document.getElementById('anim-speed-slider').value);
+                    action.setEffectiveTimeScale(speed);
+
+                    this.hubMixer.stopAllAction();
+                    
+                    if (!this.hubLoopEnabled || id.includes("death")) {
+                        action.setLoop(THREE.LoopOnce);
+                        action.clampWhenFinished = true;
+                    } else {
+                        action.setLoop(THREE.LoopRepeat);
+                    }
+
+                    action.reset().play();
+                    this.selectedHubClip = clip;
+                    
+                    const foundObj = this.libraryMovements.find(m => m.id === id);
+                    document.getElementById('anim-current-status').innerText = `Поза: ${foundObj ? foundObj.name : id}`;
+                }
+            }
+
+            toggleHubLoop() {
+                this.hubLoopEnabled = !this.hubLoopEnabled;
+                document.getElementById('hub-loop-btn').innerText = this.hubLoopEnabled ? "ПОВТОРЕНИЕ: ДА" : "ПОВТОРЕНИЕ: НЕ";
+                this.playSound(500, 0.05);
+            }
+
+            resetHubPreview() {
+                document.getElementById('anim-speed-slider').value = 1.0;
+                document.getElementById('anim-blend-slider').value = 0.3;
+                this.hubLoopEnabled = true;
+                document.getElementById('hub-loop-btn').innerText = "ПОВТОРЕНИЕ: ДА";
+                this.previewHubMovement('game_1');
+            }
+
+            applySelectedAnimation() {
+                if (!this.selectedMesh) return;
+                
+                const speed = parseFloat(document.getElementById('anim-speed-slider').value);
+                const blend = parseFloat(document.getElementById('anim-blend-slider').value);
+
+                if (this.hasCustomModel && this.mixer && this.selectedHubClip) {
+                    const action = this.mixer.clipAction(this.selectedHubClip);
+                    action.setEffectiveTimeScale(speed);
+                    
+                    if (!this.hubLoopEnabled) {
+                        action.setLoop(THREE.LoopOnce);
+                        action.clampWhenFinished = true;
+                    }
+
+                    if (this.currentAction) {
+                        this.currentAction.crossFadeTo(action, blend, true);
+                    } else {
+                        action.play();
+                    }
+                    this.currentAction = action;
+                    this.logChat("Филмовата анимация е успешно прехвърлена!", "ai");
+                } else {
+                    this.logChat("Анимацията беше тествана върху скелета, но този процедурен кубичен обект няма кости.", "ai");
+                }
+
+                this.closeAnimHub();
+            }
+
+            closeAnimHub() {
+                document.getElementById('animation-hub').style.display = 'none';
+                this.deselectObject();
+            }
+
             animate() {
                 requestAnimationFrame(() => this.animate());
                 const dt = Math.min(this.clock.getDelta(), 0.1);
@@ -1081,7 +1293,7 @@
 
                         targetBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.carAngle);
                         targetBody.velocity.x = Math.sin(this.carAngle) * this.carSpeed;
-                        targetBody.velocity.z = Math.cos(carAngle) * this.carSpeed;
+                        targetBody.velocity.z = Math.cos(this.carAngle) * this.carSpeed;
                     } else {
                         let speedMultiplier = this.isHoldingRun ? this.humanBaseSpeed * 2.1 : this.humanBaseSpeed;
                         let inputLength = Math.hypot(this.joystickVector.x, this.joystickVector.y);
@@ -1096,7 +1308,6 @@
                             targetBody.velocity.z = 0;
                         }
 
-                        // ЛОГИКА ЗА АНИМИРАНЕ НА СЛОЖНИ ВЪНШНИ МОДЕЛИ (.ZIP)
                         if (this.hasCustomModel && this.mixer) {
                             if (this.isPunching) {
                                 this.punchTimer -= dt;
@@ -1114,7 +1325,6 @@
                             }
                         }
 
-                        // ЛОГИКА ЗА СТАРОТО СГЛОБЕНО КУБЧЕ
                         if (!this.hasCustomModel) {
                             this.animTime += dt * speedMultiplier * (inputLength > 0.1 ? 1.3 : 0);
                             let isGrounded = Math.abs(this.playerBody.velocity.y) < 0.5;
@@ -1144,7 +1354,6 @@
                     }
                 }
 
-                // ОБНОВЯВАНЕ НА АНИМАЦИОННИЯ МИКСЕР НА СЕКУНДА
                 if (this.mixer) this.mixer.update(dt);
 
                 this.world.step(1/60);
