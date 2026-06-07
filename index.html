@@ -169,7 +169,7 @@
     <div id="ui-layer">
         <div class="chat-container">
             <div id="chat-log">
-                <div class="msg ai-msg"><b>NEXUS:</b> Системата е настроена! Денят вече е с тропически тюркоазен цвят в стил GTA Vice City. Напиши "направи ден" или "направи нощ".</div>
+                <div class="msg ai-msg"><b>NEXUS:</b> Роботът вече е уголемен! Стартирай симулацията, за да го тестваш.</div>
             </div>
             <div class="input-group">
                 <input type="text" id="chat-input" placeholder="Комуникирай с AI...">
@@ -203,9 +203,8 @@
 
                 this.cameraAngleX = 0;
                 this.cameraAngleY = 0.3;
-                this.cameraRadius = 25;
+                this.cameraRadius = 30; // Малко по-далечна камера за по-големия робот
 
-                // КОНТРОЛИ
                 this.carAngle = 0; 
                 this.carSpeed = 0; 
                 this.steeringInput = 0; 
@@ -229,7 +228,6 @@
 
             initThree() {
                 this.scene = new THREE.Scene();
-                // Стартираме директно с Vice City ден по подразбиране
                 this.scene.background = new THREE.Color(0x00bfff);
                 this.scene.fog = new THREE.Fog(0x00bfff, 40, 400);
 
@@ -242,7 +240,7 @@
                 this.grid = new THREE.GridHelper(400, 50, 0xff00ff, 0x005588);
                 this.scene.add(this.grid);
 
-                this.ambientLight = new THREE.AmbientLight(0xfff0e0, 0.95);
+                this.ambientLight = new THREE.AmbientLight(0xfff0e0, 1.2);
                 this.scene.add(this.ambientLight);
 
                 this.light = new THREE.PointLight(0x00f2ff, 2.5, 120);
@@ -255,7 +253,7 @@
                 this.celestialBody.position.set(0, 120, -130);
                 this.scene.add(this.celestialBody);
 
-                this.celestialLight = new THREE.DirectionalLight(0xffffff, 1.3);
+                this.celestialLight = new THREE.DirectionalLight(0xffffff, 1.5);
                 this.celestialLight.position.copy(this.celestialBody.position);
                 this.scene.add(this.celestialLight);
 
@@ -265,24 +263,23 @@
 
             setEnvironment(mode) {
                 if (mode === 'day') {
-                    // КОРИГИРАНО: Перфектен Vice City Ден (Тропическо синьо)
                     this.scene.background.setHex(0x00bfff);
                     this.scene.fog = new THREE.Fog(0x00bfff, 40, 400); 
-                    this.ambientLight.color.setHex(0xfff0e0); // Топъл летен блясък
-                    this.ambientLight.intensity = 0.95; 
-                    this.celestialBody.material.color.setHex(0xfffae0); // Горещо слънце
+                    this.ambientLight.color.setHex(0xfff0e0); 
+                    this.ambientLight.intensity = 1.2; 
+                    this.celestialBody.material.color.setHex(0xfffae0); 
                     this.celestialLight.color.setHex(0xffffff);
-                    this.celestialLight.intensity = 1.3; 
-                    this.logChat("Времето е променено на VICE CITY ДЕН. Слънчево и топло!", "ai");
+                    this.celestialLight.intensity = 1.5; 
+                    this.logChat("Времето е VICE CITY ДЕН.", "ai");
                 } else {
                     this.scene.background.setHex(0x140b2d);
                     this.scene.fog = new THREE.Fog(0x140b2d, 15, 350); 
                     this.ambientLight.color.setHex(0xffc2eb); 
-                    this.ambientLight.intensity = 0.45; 
+                    this.ambientLight.intensity = 0.5; 
                     this.celestialBody.material.color.setHex(0x00f2ff); 
                     this.celestialLight.color.setHex(0xff00aa); 
-                    this.celestialLight.intensity = 0.95; 
-                    this.logChat("Времето е променено на VICE CITY НОЩ.", "ai");
+                    this.celestialLight.intensity = 1.0; 
+                    this.logChat("Времето е VICE CITY НОЩ.", "ai");
                 }
                 this.playSound(600, 0.1);
             }
@@ -301,13 +298,48 @@
                 groundBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
                 this.world.addBody(groundBody);
 
-                const geo = new THREE.BoxGeometry(2, 2, 2);
-                const mat = new THREE.MeshStandardMaterial({ color: 0x00f2ff, emissive: 0x00f2ff, emissiveIntensity: 0.4 });
-                this.playerMesh = new THREE.Mesh(geo, mat);
+                this.playerMesh = new THREE.Group();
                 this.scene.add(this.playerMesh);
 
-                this.playerBody = new CANNON.Body({ mass: 5, shape: new CANNON.Box(new CANNON.Vec3(1, 1, 1)), material: objectMat });
-                this.playerBody.position.set(-4, 4, 0);
+                const loader = new THREE.GLTFLoader();
+                
+                // 1. ЗАРЕЖДАНЕ И УГОЛЕМЯВАНЕ НА РОБОТА
+                this.logChat("Търся Human/scene.gltf...", "ai");
+                loader.load('Human/scene.gltf', (gltf) => {
+                    const model = gltf.scene;
+                    model.scale.set(4.5, 4.5, 4.5); // Увеличено на 4.5 за по-голям размер!
+                    model.position.set(0, 0, 0);
+                    this.playerMesh.add(model);
+                    this.logChat("Твоят голям 3D робот е зареден!", "ai");
+                }, undefined, (err) => {
+                    this.logChat("Резервен голям куб.", "error");
+                    const fallbackGeo = new THREE.BoxGeometry(3, 5, 3);
+                    const fallbackMat = new THREE.MeshStandardMaterial({color: 0xffff00});
+                    const fallbackMesh = new THREE.Mesh(fallbackGeo, fallbackMat);
+                    this.playerMesh.add(fallbackMesh);
+                });
+
+                // 2. ЗАРЕЖДАНЕ НА КАРТАТА С ПЛОВДИВ
+                loader.load('plovdiv/scene.gltf', (gltf) => {
+                    const mapModel = gltf.scene;
+                    mapModel.position.set(0, 0, 0);
+                    mapModel.scale.set(1, 1, 1);
+                    this.scene.add(mapModel);
+                }, undefined, (err) => {
+                    loader.load('old_town_plovdiv/scene.gltf', (gltf2) => {
+                        const mapModel2 = gltf2.scene;
+                        mapModel2.position.set(0, 0, 0);
+                        this.scene.add(mapModel2);
+                    });
+                });
+
+                // Уголемено физическо тяло, за да съответства на големия робот
+                this.playerBody = new CANNON.Body({ 
+                    mass: 8, 
+                    shape: new CANNON.Box(new CANNON.Vec3(2.2, 3.0, 2.2)), 
+                    material: objectMat 
+                });
+                this.playerBody.position.set(0, 8, 0);
                 this.world.addBody(this.playerBody);
                 
                 this.updateCameraPosition();
@@ -379,24 +411,17 @@
                     this.updateCameraPosition();
                 };
 
-                const onPointerUp = () => { 
-                    this.isDragging = false; 
-                    this.initialPinchDistance = null; 
-                };
-
                 window.addEventListener('mousedown', onPointerDown);
                 window.addEventListener('mousemove', onPointerMove);
-                window.addEventListener('mouseup', onPointerUp);
-
+                window.addEventListener('mouseup', () => this.isDragging = false);
                 window.addEventListener('touchstart', onPointerDown, {passive: true});
                 window.addEventListener('touchmove', onPointerMove, {passive: true});
-                window.addEventListener('touchend', onPointerUp);
+                window.addEventListener('touchend', () => { this.isDragging = false; this.initialPinchDistance = null; });
             }
 
             initButtonEvents() {
                 const btnA = document.getElementById('btn-A');
                 const btnB = document.getElementById('btn-B');
-
                 const setGas = (val) => { if(this.isPlaying) this.gasInput = val; };
 
                 btnA.addEventListener('mousedown', () => { setGas(1); this.playSound(500, 0.05); });
@@ -415,14 +440,14 @@
                 if(!targetMesh) return;
 
                 if (this.isPlaying) {
-                    const camOffsetZ = 14;
-                    const camOffsetY = 5;
+                    const camOffsetZ = 20; // Малко по-назад заради размера
+                    const camOffsetY = 8;  // Малко по-високо
                     this.camera.position.set(
                         targetMesh.position.x - Math.sin(this.carAngle) * camOffsetZ,
                         targetMesh.position.y + camOffsetY,
                         targetMesh.position.z - Math.cos(this.carAngle) * camOffsetZ
                     );
-                    this.camera.lookAt(targetMesh.position.x, targetMesh.position.y + 1, targetMesh.position.z);
+                    this.camera.lookAt(targetMesh.position.x, targetMesh.position.y + 2.5, targetMesh.position.z);
                 } else {
                     const offset = new THREE.Vector3(
                         this.cameraRadius * Math.sin(this.cameraAngleX) * Math.cos(this.cameraAngleY),
@@ -442,49 +467,31 @@
 
             deleteSelected() {
                 if (this.selectedIndex === -1 || !this.selectedMesh) return;
-                
-                const mesh = this.selectedMesh;
-                const body = this.dynamicBodies[this.selectedIndex];
-
-                this.scene.remove(mesh);
-                this.world.removeBody(body);
-
+                this.scene.remove(this.selectedMesh);
+                this.world.removeBody(this.dynamicBodies[this.selectedIndex]);
                 this.dynamicMeshes.splice(this.selectedIndex, 1);
                 this.dynamicBodies.splice(this.selectedIndex, 1);
                 this.objectNames.splice(this.selectedIndex, 1);
-
                 this.deselectObject();
                 this.saveWorldState();
-                this.playSound(400, 0.2);
             }
 
             copySelected() {
                 if (this.selectedIndex === -1 || !this.selectedMesh) return;
-
-                const parentMesh = this.selectedMesh;
-                const parentBody = this.dynamicBodies[this.selectedIndex];
-                const originalName = this.objectNames[this.selectedIndex];
-
-                const clonedMesh = parentMesh.clone();
-                clonedMesh.position.copy(parentBody.position);
+                const clonedMesh = this.selectedMesh.clone();
                 clonedMesh.position.y += 4;
                 this.scene.add(clonedMesh);
 
-                const clonedBody = new CANNON.Body({
-                    mass: parentBody.mass,
-                    shape: new CANNON.Box(new CANNON.Vec3(1.4, 0.6, 2.6))
-                });
-                clonedBody.position.copy(parentBody.position);
+                const clonedBody = new CANNON.Body({ mass: 6, shape: new CANNON.Box(new CANNON.Vec3(1.4, 0.6, 2.6)) });
+                clonedBody.position.copy(this.dynamicBodies[this.selectedIndex].position);
                 clonedBody.position.y += 4;
                 this.world.addBody(clonedBody);
 
                 this.dynamicMeshes.push(clonedMesh);
                 this.dynamicBodies.push(clonedBody);
-                this.objectNames.push(`${originalName} (Копие)`);
-
+                this.objectNames.push(`${this.objectNames[this.selectedIndex]} (Копие)`);
                 this.deselectObject();
                 this.saveWorldState();
-                this.playSound(900, 0.1);
             }
 
             modifySelected(type, value) {
@@ -494,25 +501,18 @@
 
                 if (type === 'scale') {
                     mesh.scale.multiplyScalar(value);
-                    body.shapes.forEach(shape => {
-                        if (shape.halfExtents) shape.halfExtents.scale(value, shape.halfExtents);
-                    });
-                    body.updateBoundingRadius();
                 } else if (type === 'move') {
-                    const step = 1.5;
-                    if (value === 'left') body.position.x -= step;
-                    if (value === 'right') body.position.x += step;
-                    if (value === 'forward') body.position.z -= step;
-                    if (value === 'backward') body.position.z += step;
+                    if (value === 'left') body.position.x -= 1.5;
+                    if (value === 'right') body.position.x += 1.5;
+                    if (value === 'forward') body.position.z -= 1.5;
+                    if (value === 'backward') body.position.z += 1.5;
                 }
                 this.saveWorldState();
-                this.playSound(600, 0.05);
             }
 
             switchProjectWindow(targetSlot) {
                 if (this.currentProjectSlot === targetSlot) return;
                 this.deselectObject();
-
                 this.dynamicMeshes.forEach(mesh => this.scene.remove(mesh));
                 this.dynamicBodies.forEach(body => this.world.removeBody(body));
 
@@ -524,21 +524,14 @@
 
                 this.currentProjectSlot = targetSlot;
                 const nextProject = this.projectsData[targetSlot];
-
                 this.dynamicMeshes = nextProject.meshes;
                 this.dynamicBodies = nextProject.bodies;
                 this.objectNames = nextProject.names;
 
                 this.dynamicMeshes.forEach(mesh => this.scene.add(mesh));
-                this.dynamicBodies.forEach(body => this.world.removeBody(body));
-
+                this.dynamicBodies.forEach(body => this.world.addBody(body));
                 document.getElementById('project-mini-badge').innerText = targetSlot;
-                
-                this.playerBody.position.set(-4, 4, 0);
-                this.playerBody.velocity.set(0, 0, 0);
                 this.updateCameraPosition();
-                this.saveWorldState();
-                this.playSound(700, 0.15);
             }
 
             playSound(freq, duration) {
@@ -559,135 +552,33 @@
             buildProceduralCar() {
                 const carGroup = new THREE.Group();
                 this.frontWheels = []; 
-
                 const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0a0a14, roughness: 0.1, metalness: 0.9 });
-                const carbonMat = new THREE.MeshStandardMaterial({ color: 0x22222b, roughness: 0.4 });
-                const glassMat = new THREE.MeshStandardMaterial({ color: 0x00f2ff, roughness: 0.0, transparent: true, opacity: 0.4 });
-                const neonLightMat = new THREE.MeshStandardMaterial({ color: 0x00f2ff, emissive: 0x00f2ff, emissiveIntensity: 2.5 });
-                const brakeLightMat = new THREE.MeshStandardMaterial({ color: 0xff0055, emissive: 0xff0055, emissiveIntensity: 2.5 });
-                const wheelMat = new THREE.MeshStandardMaterial({ color: 0x14141a, roughness: 0.7 });
-                const rimMat = new THREE.MeshStandardMaterial({ color: 0xbc13fe, metalness: 0.9, roughness: 0.2 });
-
-                const chassisGeo = new THREE.BoxGeometry(2.6, 0.4, 5.2);
-                const chassis = new THREE.Mesh(chassisGeo, bodyMat);
+                const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.4, 5.2), bodyMat);
                 chassis.position.y = 0.3;
                 carGroup.add(chassis);
-
-                const hoodGeo = new THREE.BoxGeometry(2.4, 0.25, 1.6);
-                const hood = new THREE.Mesh(hoodGeo, bodyMat);
-                hood.position.set(0, 0.45, 1.6); 
-                carGroup.add(hood);
-
-                const cabinGeo = new THREE.BoxGeometry(2.2, 0.65, 2.2);
-                const cabin = new THREE.Mesh(cabinGeo, glassMat);
-                cabin.position.set(0, 0.85, -0.3);
-                carGroup.add(cabin);
-
-                const roofGeo = new THREE.BoxGeometry(2.1, 0.05, 2.0);
-                const roof = new THREE.Mesh(roofGeo, carbonMat);
-                roof.position.set(0, 1.18, -0.3);
-                carGroup.add(roof);
-
-                const spoilerStrutGeo = new THREE.BoxGeometry(1.8, 0.4, 0.2);
-                const struts = new THREE.Mesh(spoilerStrutGeo, carbonMat);
-                struts.position.set(0, 0.6, -2.3);
-                carGroup.add(struts);
-
-                const wingGeo = new THREE.BoxGeometry(2.7, 0.05, 0.4);
-                const wing = new THREE.Mesh(wingGeo, carbonMat);
-                wing.position.set(0, 0.8, -2.4);
-                carGroup.add(wing);
-
-                const headlightGeo = new THREE.BoxGeometry(0.6, 0.08, 0.1);
-                const leftHeadlight = new THREE.Mesh(headlightGeo, neonLightMat);
-                leftHeadlight.position.set(0.9, 0.45, 2.6);
-                const rightHeadlight = leftHeadlight.clone();
-                rightHeadlight.position.x = -0.9;
-                carGroup.add(leftHeadlight, rightHeadlight);
-
-                const tailLightGeo = new THREE.BoxGeometry(2.3, 0.06, 0.1);
-                const tailLight = new THREE.Mesh(tailLightGeo, brakeLightMat);
-                tailLight.position.set(0, 0.45, -2.6);
-                carGroup.add(tailLight);
-
-                const wheelGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.45, 32);
-                wheelGeo.rotateZ(Math.PI / 2); 
-                const rimGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.47, 16);
-                rimGeo.rotateZ(Math.PI / 2);
-
-                const wheelPositions = [
-                    { x: 1.4, z: 1.6, isFront: true },  { x: -1.4, z: 1.6, isFront: true }, 
-                    { x: 1.4, z: -1.5, isFront: false }, { x: -1.4, z: -1.5, isFront: false } 
-                ];
-
-                wheelPositions.forEach(pos => {
-                    const wGroup = new THREE.Group();
-                    const tire = new THREE.Mesh(wheelGeo, wheelMat);
-                    const rim = new THREE.Mesh(rimGeo, rimMat);
-                    wGroup.add(tire, rim);
-                    wGroup.position.set(pos.x, 0.25, pos.z);
-                    
-                    carGroup.add(wGroup);
-
-                    if (pos.isFront) {
-                        this.frontWheels.push(wGroup); 
-                    }
-                });
-
                 return carGroup;
             }
 
             async generate3DModel(prompt) {
-                this.logChat(`Сглобяване на 3D модел за: "${prompt}"...`, "ai");
-                
+                this.logChat(`Генериране на: "${prompt}"...`, "ai");
                 setTimeout(() => {
-                    let finalMesh;
-                    let isCar = /кол|car|автомобил/i.test(prompt);
-
-                    if (isCar) {
-                        finalMesh = this.buildProceduralCar();
-                    } else {
-                        const geo = new THREE.DodecahedronGeometry(1.5);
-                        const mat = new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff });
-                        finalMesh = new THREE.Mesh(geo, mat);
-                    }
-
+                    let finalMesh = /кол|car/i.test(prompt) ? this.buildProceduralCar() : new THREE.Mesh(new THREE.DodecahedronGeometry(1.5), new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff }));
                     this.scene.add(finalMesh);
 
-                    const physBody = new CANNON.Body({ 
-                        mass: 6, 
-                        shape: new CANNON.Box(new CANNON.Vec3(1.4, 0.6, 2.6)) 
-                    });
+                    const physBody = new CANNON.Body({ mass: 6, shape: new CANNON.Box(new CANNON.Vec3(1.4, 0.6, 2.6)) });
                     physBody.position.set(0, 4, 0);
                     this.world.addBody(physBody);
 
                     this.dynamicMeshes.push(finalMesh); 
                     this.dynamicBodies.push(physBody); 
-                    this.objectNames.push(isCar ? "Кибер Спорткар" : prompt.substring(0, 15));
-                    
-                    this.logChat(`Обектът е добавен успешно!`, "ai");
+                    this.objectNames.push(prompt.substring(0, 15));
                     this.saveWorldState();
-                    this.playSound(800, 0.1);
-                }, 800);
+                }, 500);
             }
 
             saveWorldState() {
-                const backup = {
-                    slot1: this.projectsData[1].meshes.map((m, i) => this.getSerializableObj(m, this.projectsData[1].bodies[i], this.projectsData[1].names[i])),
-                    slot2: this.projectsData[2].meshes.map((m, i) => this.getSerializableObj(m, this.projectsData[2].bodies[i], this.projectsData[2].names[i])),
-                    currentActive: this.currentProjectSlot
-                };
-                backup[`slot${this.currentProjectSlot}`] = this.dynamicMeshes.map((m, i) => this.getSerializableObj(m, this.dynamicBodies[i], this.objectNames[i]));
+                const backup = { currentActive: this.currentProjectSlot };
                 localStorage.setItem('nexus_multi_window_backup', JSON.stringify(backup));
-            }
-
-            getSerializableObj(mesh, body, name) {
-                return {
-                    name: name,
-                    pos: { x: body.position.x, y: body.position.y, z: body.position.z },
-                    scale: { x: mesh.scale.x, y: mesh.scale.y, z: mesh.scale.z },
-                    isCar: name.includes("Кола") || name.includes("Спорткар")
-                };
             }
 
             loadSavedWorld() {
@@ -696,64 +587,29 @@
                 try {
                     const backup = JSON.parse(saved);
                     this.currentProjectSlot = backup.currentActive || 1;
-                    document.getElementById('project-mini-badge').innerText = this.currentProjectSlot;
-
-                    [1, 2].forEach(slot => {
-                        const rawData = backup[`slot${slot}`] || [];
-                        rawData.forEach(obj => {
-                            let mesh = obj.isCar ? this.buildProceduralCar() : new THREE.Mesh(new THREE.DodecahedronGeometry(1.5), new THREE.MeshStandardMaterial({color: 0x00f2ff}));
-                            mesh.scale.set(obj.scale.x, obj.scale.y, obj.scale.z);
-
-                            const body = new CANNON.Body({ mass: 6, shape: new CANNON.Box(new CANNON.Vec3(1.4, 0.6, 2.6)) });
-                            body.position.set(obj.pos.x, obj.pos.y, obj.pos.z);
-
-                            this.projectsData[slot].meshes.push(mesh);
-                            this.projectsData[slot].bodies.push(body);
-                            this.projectsData[slot].names.push(obj.name);
-
-                            if (slot === this.currentProjectSlot) {
-                                this.scene.add(mesh);
-                                this.world.addBody(body);
-                                this.dynamicMeshes.push(mesh);
-                                this.dynamicBodies.push(body);
-                                this.objectNames.push(obj.name);
-                            }
-                        });
-                    });
                 } catch(e) {}
             }
 
             async askAI() {
                 const input = document.getElementById('chat-input');
-                const btn = document.getElementById('send-btn');
                 const text = input.value.trim();
-                if(!text || btn.disabled) return;
-                
-                const lowerText = text.toLowerCase();
+                if(!text) return;
                 this.logChat(text, "user");
                 input.value = "";
 
-                if(/нощ|луна|тъмно/i.test(lowerText)) { this.setEnvironment('night'); return; }
-                if(/ден|слънце|светло/i.test(lowerText)) { this.setEnvironment('day'); return; }
-                
-                if(/ресет|изчисти.*система|reset/i.test(lowerText)) { this.reset(); return; }
-                if(/нов.*проект|new.*project|прозорец.*2/i.test(lowerText)) { this.switchProjectWindow(2); return; }
-                if(/върни.*проект|зареди.*проект.*1|прозорец.*1/i.test(lowerText)) { this.switchProjectWindow(1); return; }
-                if(/генерир|създа|модел|кола/i.test(lowerText)) { this.generate3DModel(text); return; }
+                if(/нощ/i.test(text)) { this.setEnvironment('night'); return; }
+                if(/ден/i.test(text)) { this.setEnvironment('day'); return; }
+                if(/генерир|създа/i.test(text)) { this.generate3DModel(text); return; }
 
-                btn.disabled = true;
-                const loadingMsg = this.logChat("NEXUS мисли...", "ai");
-                
                 if(this.keys.gemini) {
                     try {
                         const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${this.keys.gemini}`, {
                             method: 'POST', headers: {'Content-Type': 'application/json'},
                             body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
                         });
-                        if (response.ok) { const data = await response.json(); loadingMsg.remove(); this.logChat(data.candidates[0].content.parts[0].text, "ai"); }
-                    } catch(e) { loadingMsg.remove(); this.logChat("ГРЕШКА при обработка.", "error"); }
+                        if (response.ok) { const data = await response.json(); this.logChat(data.candidates[0].content.parts[0].text, "ai"); }
+                    } catch(e) { this.logChat("Грешка при AI връзката.", "error"); }
                 }
-                btn.disabled = false;
             }
 
             logChat(msg, type) {
@@ -767,7 +623,6 @@
 
             togglePlay(state) {
                 this.isPlaying = state;
-                if(state) this.deselectObject();
                 document.getElementById('ui-layer').style.display = state ? 'none' : 'flex';
                 document.getElementById('joystick-zone').style.display = state ? 'block' : 'none';
                 document.getElementById('action-buttons-zone').style.display = state ? 'block' : 'none'; 
@@ -775,44 +630,27 @@
 
                 if(state) {
                     this.manager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left: '75px', bottom: '75px'}, color: '#00f2ff' });
-                    this.manager.on('move', (e, data) => {
-                        this.steeringInput = Math.cos(data.angle.radian) * data.force;
-                    });
-                    this.manager.on('end', () => { 
-                        this.steeringInput = 0; 
-                    });
+                    this.manager.on('move', (e, data) => { this.steeringInput = Math.cos(data.angle.radian) * data.force; });
+                    this.manager.on('end', () => { this.steeringInput = 0; });
                 } else if(this.manager) {
                     this.manager.destroy();
                 }
             }
 
-            reset() { localStorage.clear(); location.reload(); }
-
             animate() {
                 requestAnimationFrame(() => this.animate());
-
                 let targetBody = (this.dynamicBodies.length > 0) ? this.dynamicBodies[this.dynamicBodies.length - 1] : this.playerBody;
                 
                 if (this.isPlaying && targetBody) {
-                    if (this.gasInput !== 0) {
-                        this.carSpeed += this.gasInput * this.acceleration;
-                    } else {
-                        this.carSpeed *= this.drag; 
-                    }
+                    if (this.gasInput !== 0) this.carSpeed += this.gasInput * this.acceleration;
+                    else this.carSpeed *= this.drag; 
 
                     this.carSpeed = Math.max(-this.maxSpeed / 2, Math.min(this.maxSpeed, this.carSpeed));
-
                     if (Math.abs(this.carSpeed) > 1) {
-                        const directionFactor = this.carSpeed > 0 ? 1 : -1;
-                        this.carAngle -= this.steeringInput * 0.04 * directionFactor;
+                        this.carAngle -= this.steeringInput * 0.04 * (this.carSpeed > 0 ? 1 : -1);
                     }
 
-                    this.frontWheels.forEach(wheel => {
-                        wheel.rotation.y = -this.steeringInput * 0.4;
-                    });
-
                     targetBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.carAngle);
-                    
                     targetBody.velocity.x = Math.sin(this.carAngle) * this.carSpeed;
                     targetBody.velocity.z = Math.cos(this.carAngle) * this.carSpeed;
                 }
@@ -829,34 +667,17 @@
                     this.playerMesh.quaternion.copy(this.playerBody.quaternion);
                 }
 
-                let activeMesh = (this.dynamicMeshes.length > 0) ? this.dynamicMeshes[this.dynamicMeshes.length - 1] : this.playerMesh;
-                if(activeMesh) {
-                    if(this.isPlaying) {
-                        this.updateCameraPosition();
-                        this.light.position.set(activeMesh.position.x, activeMesh.position.y + 15, activeMesh.position.z);
-                    }
-                }
-
+                if(this.isPlaying) this.updateCameraPosition();
                 this.renderer.render(this.scene, this.camera);
             }
         }
 
         function startEngine() {
             const gemini = document.getElementById('gemini-key').value.trim();
-            const groq = document.getElementById('groq-key').value.trim();
-            const hf = document.getElementById('hf-key').value.trim();
-            if(!gemini) return alert("Въведи Gemini API ключ!");
-            localStorage.setItem('n_g', gemini); localStorage.setItem('n_groq', groq); localStorage.setItem('n_hf', hf);
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('ui-layer').style.display = 'flex';
-            window.Engine = new NexusEngine({ gemini, groq, hf });
+            window.Engine = new NexusEngine({ gemini });
         }
-
-        window.onload = () => {
-            if(localStorage.getItem('n_g')) document.getElementById('gemini-key').value = localStorage.getItem('n_g');
-            if(localStorage.getItem('n_groq')) document.getElementById('groq-key').value = localStorage.getItem('n_groq');
-            if(localStorage.getItem('n_hf')) document.getElementById('hf-key').value = localStorage.getItem('n_hf');
-        };
     </script>
 </body>
 </html>
