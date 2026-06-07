@@ -1193,13 +1193,21 @@
                     this.hubActor.position.set(0, 0, 0);
                     this.hubScene.add(this.hubActor);
                     
-                    // ДОБАВЕНО: Принудително обновяване на матриците, за да се генерира и визуализира скелетът правилно
                     this.hubActor.updateMatrixWorld(true);
                     
-                    // ДОБАВЕН СКЕЛЕТЕН ПОМОЩНИК (SKELETON HELPER) ЗА ПРЕГЛЕД НА СКЕЛЕТА
-                    const helper = new THREE.SkeletonHelper(this.hubActor);
-                    helper.material.linewidth = 3;
-                    this.hubScene.add(helper);
+                    let targetForSkeleton = this.hubActor;
+                    this.hubActor.traverse((child) => {
+                        if (child.isSkinnedMesh) {
+                            targetForSkeleton = child;
+                        }
+                    });
+                    
+                    this.skeletonHelper = new THREE.SkeletonHelper(targetForSkeleton);
+                    this.skeletonHelper.material.color.setHex(0x00ffcc);
+                    this.skeletonHelper.material.linewidth = 5;
+                    this.skeletonHelper.material.depthTest = false;
+                    this.skeletonHelper.renderOrder = 999;
+                    this.hubScene.add(this.skeletonHelper);
                     
                     this.hubMixer = new THREE.AnimationMixer(this.hubActor);
                     this.hubAnims = gltf.animations;
@@ -1214,6 +1222,11 @@
                     requestAnimationFrame(renderHub);
                     const dt = clockHub.getDelta();
                     if (this.hubMixer) this.hubMixer.update(dt);
+                    
+                    if (this.skeletonHelper) {
+                        this.skeletonHelper.update();
+                    }
+                    
                     if (this.hubRenderer && this.hubScene && this.hubCamera) {
                         this.hubRenderer.render(this.hubScene, this.hubCamera);
                     }
