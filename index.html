@@ -24,6 +24,7 @@
             margin: 0; padding: 0; width: 100%; height: 100%; 
             overflow: hidden; background: var(--bg-dark); color: white;
             font-family: 'Roboto', sans-serif;
+            user-select: none; -webkit-user-select: none;
         }
 
         canvas { position: fixed; top: 0; left: 0; z-index: 1; }
@@ -91,12 +92,12 @@
         .action-btn {
             position: absolute; width: 45px; height: 45px; border-radius: 50%;
             border: 2px solid var(--accent); background: rgba(5, 5, 10, 0.75);
-            color: white; font-family: 'Orbitron'; font-weight: bold; font-size: 16px;
+            color: white; font-family: 'Orbitron'; font-weight: bold; font-size: 10px;
             cursor: pointer; box-shadow: 0 0 10px rgba(0, 242, 255, 0.2);
             display: flex; align-items: center; justify-content: center;
             user-select: none; -webkit-user-select: none;
         }
-        #btn-Y { top: 0; left: 47px; border-color: #ffeb3b; color: #ffeb3b; }
+        #btn-ENTER { top: 0; left: 47px; border-color: #ffeb3b; color: #ffeb3b; font-size: 9px; }
         #btn-X { top: 47px; left: 0; border-color: #00f2ff; color: #00f2ff; }
         #btn-A { bottom: 0; left: 47px; border-color: #4caf50; color: #4caf50; }
         #btn-B { top: 47px; right: 0; border-color: #f44336; color: #f44336; }
@@ -123,7 +124,6 @@
             box-shadow: 0 0 6px rgba(0, 242, 255, 0.3);
         }
 
-        /* ЕКРАН БИБЛИОТЕКА */
         #library-screen {
             position: fixed; z-index: 2000; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(5, 5, 12, 0.98); display: none; flex-direction: column;
@@ -254,16 +254,16 @@
     <div id="joystick-zone"></div>
 
     <div id="action-buttons-zone">
-        <button id="btn-Y" class="action-btn">Y</button>
-        <button id="btn-X" class="action-btn">X</button>
-        <button id="btn-B" class="action-btn">B</button>
-        <button id="btn-A" class="action-btn">A</button>
+        <button id="btn-ENTER" class="action-btn">ENTER</button>
+        <button id="btn-X" class="action-btn">HIT</button>
+        <button id="btn-B" class="action-btn">RUN</button>
+        <button id="btn-A" class="action-btn">JUMP</button>
     </div>
 
     <div id="ui-layer">
         <div class="chat-container">
             <div id="chat-log">
-                <div class="msg ai-msg"><b>NEXUS:</b> Роботът е готов. Напиши думата <b>библиотека</b> тук в чата, за да отвориш мениджъра за модели.</div>
+                <div class="msg ai-msg"><b>NEXUS:</b> Системата е готова. Напиши думата <b>библиотека</b> тук в чата, за да отвориш мениджъра за модели.</div>
             </div>
             <div class="input-group">
                 <input type="text" id="chat-input" placeholder="Комуникирай с AI (напиши библиотека)...">
@@ -290,7 +290,6 @@
                 this.dynamicBodies = [];
                 this.dynamicMeshes = [];
                 this.objectNames = [];
-                this.frontWheels = []; 
 
                 this.selectedMesh = null;
                 this.selectedIndex = -1;
@@ -304,9 +303,25 @@
                 this.steeringInput = 0; 
                 this.gasInput = 0;      
                 
-                this.maxSpeed = 35;
-                this.acceleration = 0.5;
-                this.drag = 0.95;       
+                this.maxSpeed = 40;
+                this.acceleration = 0.8;
+                this.drag = 0.94;       
+
+                this.joystickVector = { x: 0, y: 0 };
+                this.humanBaseSpeed = 12;
+                this.isHoldingRun = false;
+                
+                this.isInCarMode = false;
+
+                this.animTime = 0;
+                this.isPunching = false;
+                this.punchTimer = 0;
+                this.hasCustomModel = false;
+
+                // АНИМАЦИОННИ МЕНИДЖЪРИ ЗА ВЪНШНИ МОДЕЛИ
+                this.mixer = null;
+                this.animationsMap = {}; 
+                this.currentAction = null;
 
                 this.isDragging = false;
                 this.previousMousePosition = { x: 0, y: 0 };
@@ -345,8 +360,6 @@
                 const celestialMat = new THREE.MeshBasicMaterial({ color: 0xfffae0 });
                 this.celestialBody = new THREE.Mesh(celestialGeo, celestialMat);
                 this.celestialBody.position.set(0, 120, -130);
-                this.scene.add(this.grid.parent ? this.celestialBody : this.celestialBody); // Запазва референцията
-
                 this.scene.add(this.celestialBody);
 
                 this.celestialLight = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -361,7 +374,58 @@
                 document.getElementById('library-screen').style.display = show ? 'flex' : 'none';
             }
 
-            // ЧЕТЕНЕ И АВТОМАТИЧНО РАЗАРХИВИРАНЕ НА .ZIP ОТ ТЕЛЕФОН
+            // ИНТЕЛЕКТУАЛНО СВЪРЗВАНЕ НА АНИМАЦИИТЕ СЕГА
+            setupModelAnimations(gltf) {
+                if (!gltf.animations || gltf.animations.length === 0) return;
+
+                this.mixer = new THREE.AnimationMixer(gltf.scene);
+                this.animationsMap = {};
+
+                gltf.animations.forEach(clip => {
+                    const name = clip.name.toLowerCase();
+                    if (name.includes('punch') || name.includes('hit') || name.includes('attack')) {
+                        this.animationsMap['punch'] = this.mixer.clipAction(clip);
+                    } else if (name.includes('run') || name.includes('sprint')) {
+                        this.animationsMap['run'] = this.mixer.clipAction(clip);
+                    } else if (name.includes('walk') || name.includes('move') || name.includes('strut')) {
+                        this.animationsMap['walk'] = this.mixer.clipAction(clip);
+                    } else if (name.includes('jump') || name.includes('leap')) {
+                        this.animationsMap['jump'] = this.mixer.clipAction(clip);
+                    } else if (name.includes('idle') || name.includes('stay') || name.includes('wait')) {
+                        this.animationsMap['idle'] = this.mixer.clipAction(clip);
+                    }
+                });
+
+                // Ако няма намерени точни съвпадения, разпределя първите намерени подред
+                if (!this.animationsMap['idle'] && gltf.animations[0]) this.animationsMap['idle'] = this.mixer.clipAction(gltf.animations[0]);
+                if (!this.animationsMap['walk'] && gltf.animations[1]) this.animationsMap['walk'] = this.mixer.clipAction(gltf.animations[1]);
+                if (!this.animationsMap['run'] && gltf.animations[2]) this.animationsMap['run'] = this.mixer.clipAction(gltf.animations[2]);
+                
+                // Включва базово състояние
+                if (this.animationsMap['idle']) {
+                    this.currentAction = this.animationsMap['idle'];
+                    this.currentAction.play();
+                }
+            }
+
+            // Смяна между състоянията на анимация в реално време (GTA Style)
+            fadeToAnimation(type) {
+                const nextAction = this.animationsMap[type];
+                if (!nextAction || this.currentAction === nextAction) return;
+
+                if (type === 'punch' || type === 'jump') {
+                    nextAction.setLoop(THREE.LoopOnce);
+                    nextAction.clampWhenFinished = true;
+                }
+
+                nextAction.reset();
+                nextAction.play();
+                if(this.currentAction) {
+                    this.currentAction.crossFadeTo(nextAction, 0.2, true);
+                }
+                this.currentAction = nextAction;
+            }
+
             loadLocalZip(event) {
                 const file = event.target.files[0];
                 if (!file) return;
@@ -374,12 +438,10 @@
                     const arrayBuffer = e.target.result;
                     const zipData = new Uint8Array(arrayBuffer);
                     
-                    // Разархивиране чрез fflate
                     const unzipped = fflate.unzipSync(zipData);
                     const fileMap = {};
                     let gltfPath = null;
 
-                    // Индексиране на файловете в архива
                     for (const path in unzipped) {
                         const data = unzipped[path];
                         fileMap[path] = data;
@@ -393,11 +455,9 @@
                         return;
                     }
 
-                    // LoadingManager за пренасочване на вътрешни текстури и .bin файлове
                     const manager = new THREE.LoadingManager();
                     manager.setURLModifier((url) => {
                         const cleanUrl = url.replace(/^(\.\/|\/)/, '');
-                        // Търсене по име на файл в архива
                         for (const path in fileMap) {
                             if (path.endsWith(cleanUrl)) {
                                 const blob = new Blob([fileMap[path]], { type: 'application/octet-stream' });
@@ -418,7 +478,10 @@
                         model.scale.set(4.5, 4.5, 4.5);
                         model.position.set(0, 0, 0);
                         this.playerMesh.add(model);
-                        this.logChat("Успешно заредих модела от .zip архива!", "ai");
+                        
+                        this.setupModelAnimations(gltf); // Зареждане на костите и анимациите
+                        this.hasCustomModel = true;
+                        this.logChat("Успешно заредих модела и активирах анимациите!", "ai");
                     }, (err) => {
                         this.logChat("Грешка при сглобяване на файловете от архива.", "error");
                     });
@@ -456,6 +519,11 @@
                     model.scale.set(scale, scale, scale);
                     model.position.set(0, 0, 0);
                     this.playerMesh.add(model);
+                    
+                    if(type !== 'city') {
+                        this.setupModelAnimations(gltf); 
+                        this.hasCustomModel = true;
+                    }
                     this.logChat(`Успешно зареден онлайн ${type}!`, "ai");
                 }, undefined, (err) => {
                     this.logChat("Грешка при теглене на онлайн модела.", "error");
@@ -487,12 +555,12 @@
 
             initPhysics() {
                 this.world = new CANNON.World();
-                this.world.gravity.set(0, -9.82, 0);
+                this.world.gravity.set(0, -26, 0); 
 
                 const groundMat = new CANNON.Material("groundMat");
                 const objectMat = new CANNON.Material("objectMat");
 
-                const contactMat = new CANNON.ContactMaterial(groundMat, objectMat, { friction: 0.6, restitution: 0.3 });
+                const contactMat = new CANNON.ContactMaterial(groundMat, objectMat, { friction: 0.3, restitution: 0.1 });
                 this.world.addContactMaterial(contactMat);
 
                 const groundBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane(), material: groundMat });
@@ -500,44 +568,57 @@
                 this.world.addBody(groundBody);
 
                 this.playerMesh = new THREE.Group();
+                
+                this.proceduralHuman = new THREE.Group();
+                const torsoMat = new THREE.MeshStandardMaterial({ color: 0x33b5e5, roughness: 0.5 }); 
+                const legsMat = new THREE.MeshStandardMaterial({ color: 0x1a237e }); 
+                const skinMat = new THREE.MeshStandardMaterial({ color: 0xffcc99 }); 
+
+                this.torso = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.5, 0.6), torsoMat);
+                this.torso.position.y = 1.8;
+                this.proceduralHuman.add(this.torso);
+
+                this.head = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), skinMat);
+                this.head.position.y = 2.85;
+                this.proceduralHuman.add(this.head);
+
+                this.leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.1, 0.4), legsMat);
+                this.leftLeg.position.set(-0.3, 0.55, 0);
+                this.proceduralHuman.add(this.leftLeg);
+
+                this.rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.1, 0.4), legsMat);
+                this.rightLeg.position.set(0.3, 0.55, 0);
+                this.proceduralHuman.add(this.rightLeg);
+
+                this.leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.1, 0.35), skinMat);
+                this.leftArm.position.set(-0.75, 1.8, 0);
+                this.proceduralHuman.add(this.leftArm);
+
+                this.rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.1, 0.35), skinMat);
+                this.rightArm.position.set(0.75, 1.8, 0);
+                this.proceduralHuman.add(this.rightArm);
+
+                this.playerMesh.add(this.proceduralHuman);
                 this.scene.add(this.playerMesh);
 
                 const loader = new THREE.GLTFLoader();
-                
-                this.logChat("Търся Human/scene.gltf...", "ai");
-                loader.load('Human/scene.gltf', (gltf) => {
-                    const model = gltf.scene;
-                    model.scale.set(4.5, 4.5, 4.5); 
-                    model.position.set(0, 0, 0);
-                    this.playerMesh.add(model);
-                    this.logChat("Твоят голям 3D робот е зареден!", "ai");
-                }, undefined, (err) => {
-                    this.logChat("Резервен голям куб.", "error");
-                    const fallbackGeo = new THREE.BoxGeometry(3, 5, 3);
-                    const fallbackMat = new THREE.MeshStandardMaterial({color: 0xffff00});
-                    const fallbackMesh = new THREE.Mesh(fallbackGeo, fallbackMat);
-                    this.playerMesh.add(fallbackMesh);
-                });
-
                 loader.load('plovdiv/scene.gltf', (gltf) => {
                     const mapModel = gltf.scene;
-                    mapModel.position.set(0, 0, 0);
-                    mapModel.scale.set(1, 1, 1);
                     this.scene.add(mapModel);
                 }, undefined, (err) => {
                     loader.load('old_town_plovdiv/scene.gltf', (gltf2) => {
                         const mapModel2 = gltf2.scene;
-                        mapModel2.position.set(0, 0, 0);
                         this.scene.add(mapModel2);
                     });
                 });
 
                 this.playerBody = new CANNON.Body({ 
-                    mass: 8, 
-                    shape: new CANNON.Box(new CANNON.Vec3(2.2, 3.0, 2.2)), 
-                    material: objectMat 
+                    mass: 70, 
+                    shape: new CANNON.Box(new CANNON.Vec3(1.0, 1.8, 1.0)), 
+                    material: objectMat,
+                    fixedRotation: true 
                 });
-                this.playerBody.position.set(0, 8, 0);
+                this.playerBody.position.set(0, 5, 0);
                 this.world.addBody(this.playerBody);
                 
                 this.updateCameraPosition();
@@ -601,9 +682,9 @@
                     let deltaX = clientX - this.previousMousePosition.x;
                     let deltaY = clientY - this.previousMousePosition.y;
 
-                    this.cameraAngleX -= deltaX * 0.005;
-                    this.cameraAngleY += deltaY * 0.005;
-                    this.cameraAngleY = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, this.cameraAngleY));
+                    this.cameraAngleX -= deltaX * 0.006;
+                    this.cameraAngleY += deltaY * 0.006;
+                    this.cameraAngleY = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, this.cameraAngleY));
 
                     this.previousMousePosition = { x: clientX, y: clientY };
                     this.updateCameraPosition();
@@ -617,35 +698,161 @@
                 window.addEventListener('touchend', () => { this.isDragging = false; this.initialPinchDistance = null; });
             }
 
+            updateButtonsUI() {
+                const btnA = document.getElementById('btn-A');
+                const btnB = document.getElementById('btn-B');
+                const btnX = document.getElementById('btn-X');
+                
+                if (this.isInCarMode) {
+                    btnA.innerText = "GAS";
+                    btnB.innerText = "BRAKE";
+                    btnX.innerText = "NITRO";
+                    btnX.style.borderColor = "#bc13fe";
+                    btnX.style.color = "#bc13fe";
+                } else {
+                    btnA.innerText = "JUMP";
+                    btnB.innerText = "RUN";
+                    btnX.innerText = "HIT";
+                    btnX.style.borderColor = "#00f2ff";
+                    btnX.style.color = "#00f2ff";
+                }
+            }
+
             initButtonEvents() {
                 const btnA = document.getElementById('btn-A');
                 const btnB = document.getElementById('btn-B');
-                const setGas = (val) => { if(this.isPlaying) this.gasInput = val; };
+                const btnX = document.getElementById('btn-X');
+                const btnENTER = document.getElementById('btn-ENTER');
 
-                btnA.addEventListener('mousedown', () => { setGas(1); this.playSound(500, 0.05); });
-                btnA.addEventListener('mouseup', () => setGas(0));
-                btnA.addEventListener('touchstart', (e) => { e.preventDefault(); setGas(1); });
-                btnA.addEventListener('touchend', () => setGas(0));
+                const pressA = () => {
+                    if(!this.isPlaying) return;
+                    if(this.isInCarMode) {
+                        this.gasInput = 1; 
+                        this.playSound(500, 0.05);
+                    } else {
+                        if (Math.abs(this.playerBody.velocity.y) < 0.4) {
+                            this.playerBody.velocity.y = 14; 
+                            this.playSound(450, 0.1);
+                            if (this.hasCustomModel && this.animationsMap['jump']) {
+                                this.fadeToAnimation('jump');
+                            }
+                        }
+                    }
+                };
+                const releaseA = () => { if(this.isInCarMode) this.gasInput = 0; };
+                
+                btnA.addEventListener('mousedown', pressA);
+                btnA.addEventListener('mouseup', releaseA);
+                btnA.addEventListener('touchstart', (e) => { e.preventDefault(); pressA(); });
+                btnA.addEventListener('touchend', (e) => { e.preventDefault(); releaseA(); });
 
-                btnB.addEventListener('mousedown', () => { setGas(-1); this.playSound(350, 0.05); });
-                btnB.addEventListener('mouseup', () => setGas(0));
-                btnB.addEventListener('touchstart', (e) => { e.preventDefault(); setGas(-1); });
-                btnB.addEventListener('touchend', () => setGas(0));
+                const pressB = () => {
+                    if(!this.isPlaying) return;
+                    if(this.isInCarMode) {
+                        this.gasInput = -1; 
+                        this.playSound(350, 0.05);
+                    } else {
+                        this.isHoldingRun = true; 
+                    }
+                };
+                const releaseB = () => {
+                    if(this.isInCarMode) this.gasInput = 0; 
+                    else this.isHoldingRun = false; 
+                };
+
+                btnB.addEventListener('mousedown', pressB);
+                btnB.addEventListener('mouseup', releaseB);
+                btnB.addEventListener('touchstart', (e) => { e.preventDefault(); pressB(); });
+                btnB.addEventListener('touchend', (e) => { e.preventDefault(); releaseB(); });
+
+                const pressX = () => {
+                    if(!this.isPlaying) return;
+                    if(this.isInCarMode) {
+                        this.playSound(750, 0.3);
+                        this.carSpeed += 18; 
+                    } else {
+                        this.playSound(220, 0.12);
+                        this.isPunching = true;
+                        this.punchTimer = 0.4; 
+                        
+                        if (this.hasCustomModel && this.animationsMap['punch']) {
+                            this.fadeToAnimation('punch');
+                        }
+
+                        const rotation = this.playerMesh.rotation.y;
+                        this.playerBody.velocity.x += Math.sin(rotation) * 8;
+                        this.playerBody.velocity.z += Math.cos(rotation) * 8;
+                    }
+                };
+                btnX.addEventListener('click', pressX);
+                btnX.addEventListener('touchstart', (e) => { e.preventDefault(); pressX(); });
+
+                const toggleVehicleState = () => {
+                    if(!this.isPlaying) return;
+                    
+                    if(this.isInCarMode) {
+                        this.playSound(400, 0.2);
+                        this.isInCarMode = false;
+                        this.gasInput = 0;
+                        this.carSpeed = 0;
+                        this.steeringInput = 0;
+                        
+                        let carBody = this.dynamicBodies[this.dynamicBodies.length - 1];
+                        if(carBody) {
+                            this.playerBody.position.set(carBody.position.x + 4, carBody.position.y + 2, carBody.position.z);
+                            this.playerBody.velocity.set(0, 0, 0);
+                        }
+                        this.scene.add(this.playerMesh); 
+                        this.updateButtonsUI();
+                        this.logChat("Излезе от превозното средство.", "ai");
+                    } else {
+                        if(this.dynamicBodies.length > 0) {
+                            let carBody = this.dynamicBodies[this.dynamicBodies.length - 1];
+                            let dx = this.playerBody.position.x - carBody.position.x;
+                            let dz = this.playerBody.position.z - carBody.position.z;
+                            let dist = Math.hypot(dx, dz);
+                            
+                            if(dist < 10) { 
+                                this.playSound(600, 0.2);
+                                this.isInCarMode = true;
+                                this.joystickVector = { x: 0, y: 0 };
+                                this.scene.remove(this.playerMesh); 
+                                this.updateButtonsUI();
+                                this.logChat("Влезе в превозното средство!", "ai");
+                            } else {
+                                this.logChat("Прекалено си далеч от колата, приближи се!", "error");
+                            }
+                        } else {
+                            this.logChat("Няма генерирана кола в играта.", "error");
+                        }
+                    }
+                };
+                btnENTER.addEventListener('click', toggleVehicleState);
+                btnENTER.addEventListener('touchstart', (e) => { e.preventDefault(); toggleVehicleState(); });
             }
 
             updateCameraPosition() {
-                let targetMesh = (this.dynamicMeshes.length > 0) ? this.dynamicMeshes[this.dynamicMeshes.length - 1] : this.playerMesh;
+                let targetMesh = this.isInCarMode ? this.dynamicMeshes[this.dynamicMeshes.length - 1] : this.playerMesh;
                 if(!targetMesh) return;
 
                 if (this.isPlaying) {
-                    const camOffsetZ = 20; 
-                    const camOffsetY = 8;  
-                    this.camera.position.set(
-                        targetMesh.position.x - Math.sin(this.carAngle) * camOffsetZ,
-                        targetMesh.position.y + camOffsetY,
-                        targetMesh.position.z - Math.cos(this.carAngle) * camOffsetZ
-                    );
-                    this.camera.lookAt(targetMesh.position.x, targetMesh.position.y + 2.5, targetMesh.position.z);
+                    if(this.isInCarMode) {
+                        const camOffsetZ = 24; 
+                        const camOffsetY = 7;  
+                        this.camera.position.set(
+                            targetMesh.position.x - Math.sin(this.carAngle) * camOffsetZ,
+                            targetMesh.position.y + camOffsetY,
+                            targetMesh.position.z - Math.cos(this.carAngle) * camOffsetZ
+                        );
+                        this.camera.lookAt(targetMesh.position.x, targetMesh.position.y + 2, targetMesh.position.z);
+                    } else {
+                        this.camera.position.set(
+                            this.playerBody.position.x - Math.sin(this.cameraAngleX) * 22,
+                            this.playerBody.position.y + 6,
+                            this.playerBody.position.z - Math.cos(this.cameraAngleX) * 22
+                        );
+                        this.camera.lookAt(this.playerBody.position.x, this.playerBody.position.y + 1.2, this.playerBody.position.z);
+                    }
                 } else {
                     const offset = new THREE.Vector3(
                         this.cameraRadius * Math.sin(this.cameraAngleX) * Math.cos(this.cameraAngleY),
@@ -749,10 +956,9 @@
 
             buildProceduralCar() {
                 const carGroup = new THREE.Group();
-                this.frontWheels = []; 
-                const bodyMat = new THREE.MeshStandardMaterial({ color: 0x0a0a14, roughness: 0.1, metalness: 0.9 });
-                const chassis = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.4, 5.2), bodyMat);
-                chassis.position.y = 0.3;
+                const bodyMat = new THREE.MeshStandardMaterial({ color: 0xff0055, roughness: 0.1, metalness: 0.8 });
+                const chassis = new THREE.Mesh(new THREE.BoxGeometry(3, 0.8, 6), bodyMat);
+                chassis.position.y = 0.6;
                 carGroup.add(chassis);
                 return carGroup;
             }
@@ -760,10 +966,10 @@
             async generate3DModel(prompt) {
                 this.logChat(`Генериране на: "${prompt}"...`, "ai");
                 setTimeout(() => {
-                    let finalMesh = /кол|car/i.test(prompt) ? this.buildProceduralCar() : new THREE.Mesh(new THREE.DodecahedronGeometry(1.5), new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff }));
+                    let finalMesh = /кол|car|мотор|motor/i.test(prompt) ? this.buildProceduralCar() : new THREE.Mesh(new THREE.DodecahedronGeometry(1.5), new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff }));
                     this.scene.add(finalMesh);
 
-                    const physBody = new CANNON.Body({ mass: 6, shape: new CANNON.Box(new CANNON.Vec3(1.4, 0.6, 2.6)) });
+                    const physBody = new CANNON.Body({ mass: 150, shape: new CANNON.Box(new CANNON.Vec3(1.5, 0.6, 3.0)) });
                     physBody.position.set(0, 4, 0);
                     this.world.addBody(physBody);
 
@@ -795,7 +1001,6 @@
                 this.logChat(text, "user");
                 input.value = "";
 
-                // ПРОВЕРКА ЗА КОМАНДА БИБЛИОТЕКА
                 if(/библиотека/i.test(text)) {
                     this.toggleLibrary(true);
                     this.logChat("Системата активира голямата библиотека!", "ai");
@@ -833,10 +1038,21 @@
                 document.getElementById('action-buttons-zone').style.display = state ? 'block' : 'none'; 
                 document.getElementById('exit-btn').style.display = state ? 'block' : 'none';
 
+                this.updateButtonsUI();
+
                 if(state) {
                     this.manager = nipplejs.create({ zone: document.getElementById('joystick-zone'), mode: 'static', position: {left: '75px', bottom: '75px'}, color: '#00f2ff' });
-                    this.manager.on('move', (e, data) => { this.steeringInput = Math.cos(data.angle.radian) * data.force; });
-                    this.manager.on('end', () => { this.steeringInput = 0; });
+                    
+                    this.manager.on('move', (e, data) => { 
+                        this.steeringInput = data.vector.x; 
+                        this.joystickVector.x = data.vector.x;
+                        this.joystickVector.y = data.vector.y;
+                    });
+                    
+                    this.manager.on('end', () => { 
+                        this.steeringInput = 0; 
+                        this.joystickVector = { x: 0, y: 0 };
+                    });
                 } else if(this.manager) {
                     this.manager.destroy();
                 }
@@ -844,21 +1060,92 @@
 
             animate() {
                 requestAnimationFrame(() => this.animate());
-                let targetBody = (this.dynamicBodies.length > 0) ? this.dynamicBodies[this.dynamicBodies.length - 1] : this.playerBody;
+                const dt = Math.min(this.clock.getDelta(), 0.1);
+                
+                let carBody = (this.dynamicBodies.length > 0) ? this.dynamicBodies[this.dynamicBodies.length - 1] : null;
+                let targetBody = this.isInCarMode ? carBody : this.playerBody;
                 
                 if (this.isPlaying && targetBody) {
-                    if (this.gasInput !== 0) this.carSpeed += this.gasInput * this.acceleration;
-                    else this.carSpeed *= this.drag; 
+                    if (this.isInCarMode) {
+                        if (this.gasInput !== 0) {
+                            this.carSpeed += this.gasInput * this.acceleration;
+                        } else {
+                            this.carSpeed *= this.drag; 
+                        }
 
-                    this.carSpeed = Math.max(-this.maxSpeed / 2, Math.min(this.maxSpeed, this.carSpeed));
-                    if (Math.abs(this.carSpeed) > 1) {
-                        this.carAngle -= this.steeringInput * 0.04 * (this.carSpeed > 0 ? 1 : -1);
+                        this.carSpeed = Math.max(-this.maxSpeed / 2, Math.min(this.maxSpeed, this.carSpeed));
+                        
+                        if (Math.abs(this.carSpeed) > 1) {
+                            this.carAngle -= this.steeringInput * 0.05 * (this.carSpeed > 0 ? 1 : -1);
+                        }
+
+                        targetBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.carAngle);
+                        targetBody.velocity.x = Math.sin(this.carAngle) * this.carSpeed;
+                        targetBody.velocity.z = Math.cos(carAngle) * this.carSpeed;
+                    } else {
+                        let speedMultiplier = this.isHoldingRun ? this.humanBaseSpeed * 2.1 : this.humanBaseSpeed;
+                        let inputLength = Math.hypot(this.joystickVector.x, this.joystickVector.y);
+
+                        if (inputLength > 0.1) {
+                            let moveAngle = Math.atan2(this.joystickVector.x, this.joystickVector.y) + this.cameraAngleX;
+                            targetBody.velocity.x = Math.sin(moveAngle) * speedMultiplier;
+                            targetBody.velocity.z = Math.cos(moveAngle) * speedMultiplier;
+                            this.playerMesh.rotation.y = moveAngle;
+                        } else {
+                            targetBody.velocity.x = 0;
+                            targetBody.velocity.z = 0;
+                        }
+
+                        // ЛОГИКА ЗА АНИМИРАНЕ НА СЛОЖНИ ВЪНШНИ МОДЕЛИ (.ZIP)
+                        if (this.hasCustomModel && this.mixer) {
+                            if (this.isPunching) {
+                                this.punchTimer -= dt;
+                                if (this.punchTimer <= 0) this.isPunching = false;
+                            } else if (Math.abs(this.playerBody.velocity.y) > 0.6) {
+                                this.fadeToAnimation('jump');
+                            } else if (inputLength > 0.1) {
+                                if (this.isHoldingRun) {
+                                    this.fadeToAnimation('run');
+                                } else {
+                                    this.fadeToAnimation('walk');
+                                }
+                            } else {
+                                this.fadeToAnimation('idle');
+                            }
+                        }
+
+                        // ЛОГИКА ЗА СТАРОТО СГЛОБЕНО КУБЧЕ
+                        if (!this.hasCustomModel) {
+                            this.animTime += dt * speedMultiplier * (inputLength > 0.1 ? 1.3 : 0);
+                            let isGrounded = Math.abs(this.playerBody.velocity.y) < 0.5;
+
+                            if (this.isPunching) {
+                                this.punchTimer -= dt;
+                                this.rightArm.position.set(0.75, 2.1, 0.7);
+                                this.rightArm.rotation.x = -Math.PI / 2;
+                                if (this.punchTimer <= 0) this.isPunching = false;
+                            } else if (!isGrounded) {
+                                this.leftArm.rotation.x = 2.8; this.rightArm.rotation.x = 2.8;
+                                this.leftLeg.rotation.x = -0.4; this.rightLeg.rotation.x = -0.4;
+                            } else if (inputLength > 0.1) {
+                                let wave = Math.sin(this.animTime);
+                                this.leftLeg.rotation.x = wave * 0.7;
+                                this.rightLeg.rotation.x = -wave * 0.7;
+                                this.leftArm.rotation.x = -wave * 0.8;
+                                this.rightArm.rotation.x = wave * 0.8;
+                                this.rightArm.position.set(0.75, 1.8, 0);
+                            } else {
+                                this.leftLeg.rotation.x = 0; this.rightLeg.rotation.x = 0;
+                                this.leftArm.rotation.x = Math.sin(this.clock.getElapsedTime() * 2) * 0.05;
+                                this.rightArm.rotation.x = -Math.sin(this.clock.getElapsedTime() * 2) * 0.05;
+                                this.rightArm.position.set(0.75, 1.8, 0);
+                            }
+                        }
                     }
-
-                    targetBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.carAngle);
-                    targetBody.velocity.x = Math.sin(this.carAngle) * this.carSpeed;
-                    targetBody.velocity.z = Math.cos(this.carAngle) * this.carSpeed;
                 }
+
+                // ОБНОВЯВАНЕ НА АНИМАЦИОННИЯ МИКСЕР НА СЕКУНДА
+                if (this.mixer) this.mixer.update(dt);
 
                 this.world.step(1/60);
 
@@ -869,7 +1156,9 @@
 
                 if(this.playerMesh && this.playerBody) {
                     this.playerMesh.position.copy(this.playerBody.position);
-                    this.playerMesh.quaternion.copy(this.playerBody.quaternion);
+                    if(!this.isInCarMode) {
+                        this.playerMesh.position.y -= 1.8; 
+                    }
                 }
 
                 if(this.isPlaying) this.updateCameraPosition();
