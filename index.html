@@ -10,6 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.0/umd/index.min.js"></script>
 
     <style>
         :root {
@@ -121,6 +122,29 @@
             font-family: 'Orbitron'; font-size: 9px; font-weight: bold; color: var(--accent);
             box-shadow: 0 0 6px rgba(0, 242, 255, 0.3);
         }
+
+        /* ЕКРАН БИБЛИОТЕКА */
+        #library-screen {
+            position: fixed; z-index: 2000; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 5, 12, 0.98); display: none; flex-direction: column;
+            padding: 25px; box-sizing: border-box; overflow-y: auto;
+        }
+        .lib-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--accent); padding-bottom: 15px; margin-bottom: 20px; }
+        .lib-title { font-family: 'Orbitron'; color: var(--accent); font-size: 20px; letter-spacing: 2px; margin: 0; }
+        .lib-close { background: #ff4444; border: none; color: white; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-family: 'Orbitron'; }
+        
+        .lib-section { margin-bottom: 25px; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
+        .lib-section-title { font-family: 'Orbitron'; color: var(--purple); font-size: 16px; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px; }
+        
+        .grid-assets { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+        .btn-asset-item { background: rgba(0, 242, 255, 0.08); border: 1px solid var(--accent); color: white; padding: 15px 10px; border-radius: 10px; cursor: pointer; text-align: center; font-weight: bold; font-size: 13px; font-family: 'Roboto'; transition: 0.2s; }
+        .btn-asset-item:hover { background: var(--accent); color: black; }
+
+        .list-sites { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+        .site-card { background: rgba(188, 19, 254, 0.05); border: 1px solid rgba(188, 19, 254, 0.3); padding: 12px; border-radius: 10px; text-decoration: none; color: white; display: flex; flex-direction: column; gap: 4px; transition: 0.2s; }
+        .site-card:hover { border-color: var(--purple); background: rgba(188, 19, 254, 0.15); transform: translateY(-2px); }
+        .site-name { font-family: 'Orbitron'; font-size: 13px; color: var(--accent); font-weight: bold; }
+        .site-format { font-size: 11px; color: #888; }
     </style>
 </head>
 <body>
@@ -137,6 +161,76 @@
             <input type="password" id="groq-key" placeholder="Въведи Groq API Key (Опционално)">
             <input type="password" id="hf-key" placeholder="Въведи Hugging Face Key (Опционално)">
             <button class="btn-main" onclick="startEngine()">АКТИВИРАЙ СИСТЕМАТА</button>
+        </div>
+    </div>
+
+    <div id="library-screen">
+        <div class="lib-header">
+            <h2 class="lib-title">CYBER ASSETS LIBRARY</h2>
+            <button class="lib-close" onclick="Engine.toggleLibrary(false)">✕ ЗАТВОРИ</button>
+        </div>
+
+        <div class="lib-section" style="border-color: #4caf50; background: rgba(76,175,80,0.02);">
+            <h3 class="lib-section-title" style="color: #4caf50;">📂 ИЗБЕРИ ОТ ТЕЛЕФОНА (.ZIP АРХИВ НА МОДЕЛА)</h3>
+            <p style="font-size: 12px; color: #aaa; margin-top: -10px; margin-bottom: 15px;">Тъй като телефоните не позволяват избор на папка, просто избери <b>.zip архива</b> на модела, който си изтеглил. Системата ще го разархивира и прочете автоматично!</p>
+            <input type="file" id="zip-input" accept=".zip" style="display: none;" onchange="Engine.loadLocalZip(event)">
+            <button class="btn-main" style="background: #4caf50; padding: 12px;" onclick="document.getElementById('zip-input').click()">⚡ ИЗБЕРИ .ZIP ФАЙЛ</button>
+        </div>
+
+        <div class="lib-section">
+            <h3 class="lib-section-title">🌐 ИНТЕРНЕТ МОДЕЛИ (ЗАРЕЖДАНЕ ВЕДНАГА)</h3>
+            <div class="grid-assets">
+                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('robot')">🤖 Огромен Робот</button>
+                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('city')">🏙️ Тестов Град</button>
+                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('car')">🏎️ Спортна Кола</button>
+                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('ufo')">🛸 НЛО Летящо</button>
+            </div>
+        </div>
+
+        <div class="lib-section">
+            <h3 class="lib-section-title">🔗 10 ИНТЕГРИРАНИ САЙТА ЗА БЕЗПЛАТНИ МОДЕЛИ</h3>
+            <div class="list-sites">
+                <a href="https://sketchfab.com/3d-models?features=downloadable&sort_by=-likeCount" target="_blank" class="site-card">
+                    <span class="site-name">1. Sketchfab Free</span>
+                    <span class="site-format">Формати: .gltf / .glb (Най-добър)</span>
+                </a>
+                <a href="https://www.cgtrader.com/free-3d-models" target="_blank" class="site-card">
+                    <span class="site-name">2. CGTrader Free</span>
+                    <span class="site-format">Формати: Low-Poly .gltf / .obj</span>
+                </a>
+                <a href="https://www.turbosquid.com/Search/Index.cfm?Free=1" target="_blank" class="site-card">
+                    <span class="site-name">3. TurboSquid Free</span>
+                    <span class="site-format">Формати: Архитектура, Коли (.gltf)</span>
+                </a>
+                <a href="https://kenney.nl/assets/category:3D?sort=update" target="_blank" class="site-card">
+                    <span class="site-name">4. Kenney Assets</span>
+                    <span class="site-format">Формати: .gltf (100% Безплатни пакети)</span>
+                </a>
+                <a href="https://www.mixamo.com/" target="_blank" class="site-card">
+                    <span class="site-name">5. Mixamo (Adobe)</span>
+                    <span class="site-format">Формати: Анимирани човечета и роботи</span>
+                </a>
+                <a href="https://readyplayer.me/" target="_blank" class="site-card">
+                    <span class="site-name">6. Ready Player Me</span>
+                    <span class="site-format">Формати: Директен .glb URL за аватари</span>
+                </a>
+                <a href="https://polyhaven.com/3d-models" target="_blank" class="site-card">
+                    <span class="site-name">7. Poly Haven</span>
+                    <span class="site-format">Формати: Реалистични обекти (CC0 Free)</span>
+                </a>
+                <a href="https://itch.io/game-assets/free/tag-3d" target="_blank" class="site-card">
+                    <span class="site-name">8. Itch.io Free 3D</span>
+                    <span class="site-format">Формати: Инди ретро и киберпънк стил</span>
+                </a>
+                <a href="https://free3d.com/3d-models/free" target="_blank" class="site-card">
+                    <span class="site-name">9. Free3D</span>
+                    <span class="site-format">Формати: Самолети, Сгради, Превозни средства</span>
+                </a>
+                <a href="https://github.com/KhronosGroup/glTF-Sample-Models" target="_blank" class="site-card">
+                    <span class="site-name">10. Khronos glTF</span>
+                    <span class="site-format">Формати: Официални сурови (Raw) .gltf линкове</span>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -169,10 +263,10 @@
     <div id="ui-layer">
         <div class="chat-container">
             <div id="chat-log">
-                <div class="msg ai-msg"><b>NEXUS:</b> Роботът вече е уголемен! Стартирай симулацията, за да го тестваш.</div>
+                <div class="msg ai-msg"><b>NEXUS:</b> Роботът е готов. Напиши думата <b>библиотека</b> тук в чата, за да отвориш мениджъра за модели.</div>
             </div>
             <div class="input-group">
-                <input type="text" id="chat-input" placeholder="Комуникирай с AI...">
+                <input type="text" id="chat-input" placeholder="Комуникирай с AI (напиши библиотека)...">
                 <button id="send-btn" class="btn-circle" onclick="Engine.askAI()">></button>
             </div>
             <button class="btn-main" style="margin-top: 15px;" onclick="Engine.togglePlay(true)">РАЗГЛЕДАЙ СИМУЛАЦИЯТА</button>
@@ -203,7 +297,7 @@
 
                 this.cameraAngleX = 0;
                 this.cameraAngleY = 0.3;
-                this.cameraRadius = 30; // Малко по-далечна камера за по-големия робот
+                this.cameraRadius = 30; 
 
                 this.carAngle = 0; 
                 this.carSpeed = 0; 
@@ -251,6 +345,8 @@
                 const celestialMat = new THREE.MeshBasicMaterial({ color: 0xfffae0 });
                 this.celestialBody = new THREE.Mesh(celestialGeo, celestialMat);
                 this.celestialBody.position.set(0, 120, -130);
+                this.scene.add(this.grid.parent ? this.celestialBody : this.celestialBody); // Запазва референцията
+
                 this.scene.add(this.celestialBody);
 
                 this.celestialLight = new THREE.DirectionalLight(0xffffff, 1.5);
@@ -259,6 +355,111 @@
 
                 this.raycaster = new THREE.Raycaster();
                 this.mouse = new THREE.Vector2();
+            }
+
+            toggleLibrary(show) {
+                document.getElementById('library-screen').style.display = show ? 'flex' : 'none';
+            }
+
+            // ЧЕТЕНЕ И АВТОМАТИЧНО РАЗАРХИВИРАНЕ НА .ZIP ОТ ТЕЛЕФОН
+            loadLocalZip(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                this.toggleLibrary(false);
+                this.logChat("Разархивирам модела в паметта на телефона...", "ai");
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const arrayBuffer = e.target.result;
+                    const zipData = new Uint8Array(arrayBuffer);
+                    
+                    // Разархивиране чрез fflate
+                    const unzipped = fflate.unzipSync(zipData);
+                    const fileMap = {};
+                    let gltfPath = null;
+
+                    // Индексиране на файловете в архива
+                    for (const path in unzipped) {
+                        const data = unzipped[path];
+                        fileMap[path] = data;
+                        if (path.endsWith('.gltf') || path.endsWith('.glb')) {
+                            gltfPath = path;
+                        }
+                    }
+
+                    if (!gltfPath) {
+                        this.logChat("Вътре в .zip файла липсва .gltf или .glb модел!", "error");
+                        return;
+                    }
+
+                    // LoadingManager за пренасочване на вътрешни текстури и .bin файлове
+                    const manager = new THREE.LoadingManager();
+                    manager.setURLModifier((url) => {
+                        const cleanUrl = url.replace(/^(\.\/|\/)/, '');
+                        // Търсене по име на файл в архива
+                        for (const path in fileMap) {
+                            if (path.endsWith(cleanUrl)) {
+                                const blob = new Blob([fileMap[path]], { type: 'application/octet-stream' });
+                                return URL.createObjectURL(blob);
+                            }
+                        }
+                        return url;
+                    });
+
+                    const loader = new THREE.GLTFLoader(manager);
+                    const mainData = fileMap[gltfPath];
+
+                    loader.parse(mainData.buffer, '', (gltf) => {
+                        while(this.playerMesh.children.length > 0) {
+                            this.playerMesh.remove(this.playerMesh.children[0]);
+                        }
+                        const model = gltf.scene;
+                        model.scale.set(4.5, 4.5, 4.5);
+                        model.position.set(0, 0, 0);
+                        this.playerMesh.add(model);
+                        this.logChat("Успешно заредих модела от .zip архива!", "ai");
+                    }, (err) => {
+                        this.logChat("Грешка при сглобяване на файловете от архива.", "error");
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+            }
+
+            loadDirectOnlineModel(type) {
+                this.toggleLibrary(false);
+                this.logChat(`Зареждам онлайн ${type}... Изчакай малко.`, "ai");
+                
+                let url = '';
+                let scale = 1.0;
+                const loader = new THREE.GLTFLoader();
+
+                if (type === 'robot') {
+                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/RobotExpressive/glTF-Binary/RobotExpressive.glb';
+                    scale = 4.5;
+                } else if (type === 'city') {
+                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Structure/glTF/Structure.gltf';
+                    scale = 1.5;
+                } else if (type === 'car') {
+                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb';
+                    scale = 3.5;
+                } else if (type === 'ufo') {
+                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Binary/Duck.glb';
+                    scale = 3.0;
+                }
+
+                loader.load(url, (gltf) => {
+                    while(this.playerMesh.children.length > 0) {
+                        this.playerMesh.remove(this.playerMesh.children[0]);
+                    }
+                    const model = gltf.scene;
+                    model.scale.set(scale, scale, scale);
+                    model.position.set(0, 0, 0);
+                    this.playerMesh.add(model);
+                    this.logChat(`Успешно зареден онлайн ${type}!`, "ai");
+                }, undefined, (err) => {
+                    this.logChat("Грешка при теглене на онлайн модела.", "error");
+                });
             }
 
             setEnvironment(mode) {
@@ -303,11 +504,10 @@
 
                 const loader = new THREE.GLTFLoader();
                 
-                // 1. ЗАРЕЖДАНЕ И УГОЛЕМЯВАНЕ НА РОБОТА
                 this.logChat("Търся Human/scene.gltf...", "ai");
                 loader.load('Human/scene.gltf', (gltf) => {
                     const model = gltf.scene;
-                    model.scale.set(4.5, 4.5, 4.5); // Увеличено на 4.5 за по-голям размер!
+                    model.scale.set(4.5, 4.5, 4.5); 
                     model.position.set(0, 0, 0);
                     this.playerMesh.add(model);
                     this.logChat("Твоят голям 3D робот е зареден!", "ai");
@@ -319,7 +519,6 @@
                     this.playerMesh.add(fallbackMesh);
                 });
 
-                // 2. ЗАРЕЖДАНЕ НА КАРТАТА С ПЛОВДИВ
                 loader.load('plovdiv/scene.gltf', (gltf) => {
                     const mapModel = gltf.scene;
                     mapModel.position.set(0, 0, 0);
@@ -333,7 +532,6 @@
                     });
                 });
 
-                // Уголемено физическо тяло, за да съответства на големия робот
                 this.playerBody = new CANNON.Body({ 
                     mass: 8, 
                     shape: new CANNON.Box(new CANNON.Vec3(2.2, 3.0, 2.2)), 
@@ -440,8 +638,8 @@
                 if(!targetMesh) return;
 
                 if (this.isPlaying) {
-                    const camOffsetZ = 20; // Малко по-назад заради размера
-                    const camOffsetY = 8;  // Малко по-високо
+                    const camOffsetZ = 20; 
+                    const camOffsetY = 8;  
                     this.camera.position.set(
                         targetMesh.position.x - Math.sin(this.carAngle) * camOffsetZ,
                         targetMesh.position.y + camOffsetY,
@@ -596,6 +794,13 @@
                 if(!text) return;
                 this.logChat(text, "user");
                 input.value = "";
+
+                // ПРОВЕРКА ЗА КОМАНДА БИБЛИОТЕКА
+                if(/библиотека/i.test(text)) {
+                    this.toggleLibrary(true);
+                    this.logChat("Системата активира голямата библиотека!", "ai");
+                    return;
+                }
 
                 if(/нощ/i.test(text)) { this.setEnvironment('night'); return; }
                 if(/ден/i.test(text)) { this.setEnvironment('day'); return; }
