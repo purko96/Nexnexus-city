@@ -107,6 +107,8 @@
             background: var(--glass); padding: 15px; border-radius: 16px;
             border: 1px solid var(--accent); display: none; min-width: 180px;
             backdrop-filter: blur(10px);
+            transform: scale(0.75);
+            transform-origin: top left;
         }
         .inspector-btn {
             background: rgba(255,255,255,0.1); border: 1px solid var(--accent);
@@ -374,7 +376,6 @@
             }
 
             generateOneThousandMovements() {
-                // ПЪРВИТЕ 500: ИГРОВИ/ГЕЙМИНГ АНИМАЦИИ (1 ДО 500)
                 const gameTypes = [
                     "Стандартно ходене", "Бърз спринт", "Боен скок", "Удар с юмрук", "Страничен кик", 
                     "Стрелба от клек", "Тактическо презареждане", "Прикритие зад стена", "Хвърляне на граната", "Задно салто",
@@ -392,11 +393,10 @@
                     });
                 }
 
-                // ВТОРИТЕ 500: КИНЕМАТОГРАФИЧНИ/ФИЛМОВИ АНИМАЦИИ (501 ДО 1000)
                 const movieTypes = [
                     "Драматичен плач", "Силен актьорски смях", "Диалог с жестове", "Уплашено оглеждане", "Военен поздрав",
                     "Романтично махане", "Сядане на трон", "Мислителна поза", "Падане в безсъзнание", "Бавен епичен ход",
-                    "Шекспирова реч", "Поклон пред публика", "Изплашено бягство", "Посочване с ярост", "Заспиване на легло",
+                    "Шекспирова реч", "Поклон перед публика", "Изплашено бягство", "Посочване с ярост", "Заспиване на легло",
                     "Прегръдка в близък план", "Ръкостискане", "Четене на тайна книга", "Пиене от чаша", "Кашляне в прахта",
                     "Гледане към небето", "Избърсване на сълза", "Тайнствено шепнене", "Внезапен шок", "Победоносно вдигане на ръце"
                 ];
@@ -691,6 +691,11 @@
                     return Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
                 };
 
+                // ЗАЩИТА: Спираме затварянето на инспектора, ако кликнем върху самия него
+                const inspectorPanel = document.getElementById('inspector-panel');
+                inspectorPanel.addEventListener('mousedown', (e) => e.stopPropagation());
+                inspectorPanel.addEventListener('touchstart', (e) => e.stopPropagation());
+
                 const onPointerDown = (e) => {
                     if (e.touches && e.touches.length === 2) {
                         this.isDragging = false;
@@ -706,21 +711,41 @@
                     this.mouse.y = -(clientY / window.innerHeight) * 2 + 1;
 
                     this.raycaster.setFromCamera(this.mouse, this.camera);
-                    const intersects = this.raycaster.intersectObjects(this.dynamicMeshes, true);
+                    
+                    // Проверяваме само реалните 3D модели, които могат да бъдат избирани
+                    const selectableObjects = [...this.dynamicMeshes, this.playerMesh];
+                    const intersects = this.raycaster.intersectObjects(selectableObjects, true);
 
-                    if (intersects.length === 0 && !this.isPlaying) {
-                        this.isDragging = true;
-                        this.previousMousePosition = { x: clientX, y: clientY };
-                    } else if (intersects.length > 0 && !this.isPlaying) {
+                    if (intersects.length > 0 && !this.isPlaying) {
                         let hitObj = intersects[0].object;
+                        
                         while (hitObj.parent && hitObj.parent !== this.scene) {
+                            if (hitObj.parent === this.playerMesh || hitObj === this.playerMesh) {
+                                hitObj = this.playerMesh;
+                                break;
+                            }
                             hitObj = hitObj.parent;
                         }
+                        
                         this.selectedMesh = hitObj;
                         this.selectedIndex = this.dynamicMeshes.indexOf(this.selectedMesh);
                         
+                        let objName = "Неизвестен обект";
+                        if (this.selectedMesh === this.playerMesh) {
+                            objName = "Персонаж (Зареден модел)";
+                        } else if (this.selectedIndex !== -1) {
+                            objName = this.objectNames[this.selectedIndex];
+                        }
+                        
                         document.getElementById('inspector-panel').style.display = 'block';
-                        document.getElementById('inspector-name').innerText = `Обект: ${this.objectNames[this.selectedIndex] || "Неизвестен"}`;
+                        document.getElementById('inspector-name').innerText = `Обект: ${objName}`;
+                    } else {
+                        // Ако сме извън режим на игра и сме кликнали на празно място -> затваряме инспектора
+                        if (!this.isPlaying) {
+                            this.deselectObject();
+                            this.isDragging = true;
+                            this.previousMousePosition = { x: clientX, y: clientY };
+                        }
                     }
                 };
 
@@ -1045,10 +1070,11 @@
                 }
 
                 if(/анимаци/i.test(text)) {
+                    // Променено: Вече не форсираме отваряне без селекция, а даваме инструкции
                     if (this.selectedMesh) {
                         this.openAnimHub();
                     } else {
-                        this.logChat("Моля, първо кликнете на някой модел в пространството, за да го изберете, и тогава въведете 'анимации'!", "error");
+                        this.logChat("Моля, първо кликнете с мишката директно върху някой 3D модел в пространството, за да го изберете!", "error");
                     }
                     return;
                 }
@@ -1107,7 +1133,14 @@
             openAnimHub() {
                 if (!this.selectedMesh) return;
                 document.getElementById('animation-hub').style.display = 'flex';
-                document.getElementById('anim-hub-title').innerText = `ИЗБРАН: ${this.objectNames[this.selectedIndex] || "Обект"}`;
+                
+                let currentName = "Обект";
+                if(this.selectedMesh === this.playerMesh) {
+                    currentName = "Персонаж";
+                } else if(this.selectedIndex !== -1) {
+                    currentName = this.objectNames[this.selectedIndex];
+                }
+                document.getElementById('anim-hub-title').innerText = `ИЗБРАН: ${currentName}`;
                 
                 this.initHubPreviewScene();
                 this.buildAnimationListUI(this.libraryMovements);
@@ -1288,7 +1321,7 @@
                         this.carSpeed = Math.max(-this.maxSpeed / 2, Math.min(this.maxSpeed, this.carSpeed));
                         
                         if (Math.abs(this.carSpeed) > 1) {
-                            this.carAngle -= this.steeringInput * 0.05 * (this.carSpeed > 0 ? 1 : -1);
+                            this.carAngle += this.steeringInput * 0.05 * (this.carSpeed > 0 ? 1 : -1);
                         }
 
                         targetBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 1, 0), this.carAngle);
@@ -1299,7 +1332,7 @@
                         let inputLength = Math.hypot(this.joystickVector.x, this.joystickVector.y);
 
                         if (inputLength > 0.1) {
-                            let moveAngle = Math.atan2(this.joystickVector.x, this.joystickVector.y) + this.cameraAngleX;
+                            let moveAngle = Math.atan2(-this.joystickVector.x, this.joystickVector.y) + this.cameraAngleX;
                             targetBody.velocity.x = Math.sin(moveAngle) * speedMultiplier;
                             targetBody.velocity.z = Math.cos(moveAngle) * speedMultiplier;
                             this.playerMesh.rotation.y = moveAngle;
