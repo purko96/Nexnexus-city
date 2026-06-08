@@ -138,7 +138,7 @@
         .lib-section { margin-bottom: 25px; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); }
         .lib-section-title { font-family: 'Orbitron'; color: var(--purple); font-size: 16px; margin-top: 0; margin-bottom: 15px; letter-spacing: 1px; }
         
-        .grid-assets { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+        .grid-assets { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
         .btn-asset-item { background: rgba(0, 242, 255, 0.08); border: 1px solid var(--accent); color: white; padding: 15px 10px; border-radius: 10px; cursor: pointer; text-align: center; font-weight: bold; font-size: 13px; font-family: 'Roboto'; transition: 0.2s; }
         .btn-asset-item:hover { background: var(--accent); color: black; }
 
@@ -234,12 +234,18 @@
         </div>
 
         <div class="lib-section">
-            <h3 class="lib-section-title">🌐 ИНТЕРНЕТ МОДЕЛИ (ЗАРЕЖДАНЕ ВЕДНАГА)</h3>
+            <h3 class="lib-section-title">🌐 ИНТЕРНЕТ МОДЕЛИ (ОБЩО 10 СЛОТА)</h3>
             <div class="grid-assets">
-                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('robot')">🤖 Огромен Робот</button>
-                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('city')">🏙️ Тестов Град</button>
-                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('car')">🏎️ Спортна Кола</button>
-                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('ufo')">🛸 НЛО Летящо</button>
+                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('robot')">🤖 1. Огромен Робот</button>
+                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('city')">🏙️ 2. Тестов Град</button>
+                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('car')">🏎️ 3. Спортна Кола</button>
+                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('ufo')">🛸 4. НЛО Летящо</button>
+                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('scifi_bike')">🏍️ 5. Кибер Мотор</button>
+                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('drone')">🚁 6. Тактически Дрон</button>
+                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('mech')">🦾 7. Боен Мех костюм</button>
+                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('jet')">✈️ 8. Свръхзвуков Изтребител</button>
+                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('arcade')">🕹️ 9. Ретро Аркада</button>
+                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('carrier')">🚢 10. Самолетоносач</button>
             </div>
         </div>
     </div>
@@ -588,12 +594,13 @@
 
             loadDirectOnlineModel(type) {
                 this.toggleLibrary(false);
-                this.logChat(`Зареждам онлайн ${type}... Изчакай малко.`, "ai");
+                this.logChat(`Зареждам онлайн обект [${type}]... Изчакай малко.`, "ai");
                 
                 let url = '';
                 let scale = 1.0;
                 const loader = new THREE.GLTFLoader();
 
+                // Попълнени десетте слота с актуални Khronos и публични GLTF/GLB тествани ресурси
                 if (type === 'robot') {
                     url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/RobotExpressive/glTF-Binary/RobotExpressive.glb';
                     scale = 4.5;
@@ -606,6 +613,24 @@
                 } else if (type === 'ufo') {
                     url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Binary/Duck.glb';
                     scale = 3.0;
+                } else if (type === 'scifi_bike') {
+                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/InterpolationTest/glTF-Binary/InterpolationTest.glb';
+                    scale = 4.0;
+                } else if (type === 'drone') {
+                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/ToyCar/glTF-Binary/ToyCar.glb';
+                    scale = 8.0;
+                } else if (type === 'mech') {
+                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BrainStem/glTF-Binary/BrainStem.glb';
+                    scale = 4.0;
+                } else if (type === 'jet') {
+                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF-Binary/Avocado.glb';
+                    scale = 20.0;
+                } else if (type === 'arcade') {
+                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Lantern/glTF-Binary/Lantern.glb';
+                    scale = 0.5;
+                } else if (type === 'carrier') {
+                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/WaterBottle/glTF-Binary/WaterBottle.glb';
+                    scale = 15.0;
                 }
 
                 loader.load(url, (gltf) => {
@@ -617,13 +642,13 @@
                     model.position.set(0, 0, 0);
                     this.playerMesh.add(model);
                     
-                    if(type !== 'city') {
+                    if(type !== 'city' && type !== 'carrier') {
                         this.setupModelAnimations(gltf); 
                         this.hasCustomModel = true;
                     }
-                    this.logChat(`Успешно зареден онлайн ${type}!`, "ai");
+                    this.logChat(`Успешно зареден кибер обект: ${type}!`, "ai");
                 }, undefined, (err) => {
-                    this.logChat("Грешка при теглене на онлайн модела.", "error");
+                    this.logChat("Грешка при извличане на 3D модела от облака.", "error");
                 });
             }
 
