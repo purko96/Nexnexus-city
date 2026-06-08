@@ -1199,13 +1199,17 @@
                     this.hubActor.traverse((child) => {
                         if (child.isSkinnedMesh) {
                             targetForSkeleton = child;
+                            child.updateMatrixWorld(true);
+                            if(child.skeleton) {
+                                child.skeleton.update();
+                            }
                         }
                     });
                     
                     this.skeletonHelper = new THREE.SkeletonHelper(targetForSkeleton);
                     this.skeletonHelper.material.color.setHex(0x00ffcc);
                     this.skeletonHelper.material.linewidth = 5;
-                    this.skeletonHelper.material.depthTest = false;
+                    this.skeletonHelper.material.depthWrite = false;
                     this.skeletonHelper.renderOrder = 999;
                     this.hubScene.add(this.skeletonHelper);
                     
