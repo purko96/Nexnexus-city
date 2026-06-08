@@ -142,6 +142,21 @@
         .btn-asset-item { background: rgba(0, 242, 255, 0.08); border: 1px solid var(--accent); color: white; padding: 15px 10px; border-radius: 10px; cursor: pointer; text-align: center; font-weight: bold; font-size: 13px; font-family: 'Roboto'; transition: 0.2s; }
         .btn-asset-item:hover { background: var(--accent); color: black; }
 
+        /* Модален прозорец за разглеждане на моделите от избран сайт */
+        #site-models-popup {
+            position: fixed; z-index: 3000; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 85%; max-width: 600px; height: 75%; background: rgba(10, 10, 20, 0.98);
+            border: 2px solid var(--accent); border-radius: 20px; box-shadow: 0 0 30px rgba(0,242,255,0.4);
+            display: none; flex-direction: column; padding: 20px; box-sizing: border-box;
+        }
+        .popup-models-list { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .model-row-item {
+            display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03);
+            padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);
+        }
+        .model-row-item.selected-row { border-color: var(--accent); background: rgba(0,242,255,0.05); }
+        .popup-action-btn { font-family: 'Orbitron'; font-size: 11px; font-weight: bold; padding: 12px; border-radius: 8px; border: none; cursor: pointer; }
+
         #animation-hub {
             position: fixed; z-index: 4000; top: 0; left: 0; width: 100%; height: 100%;
             background: #040408; display: none; flex-direction: row; padding: 20px;
@@ -226,27 +241,50 @@
             <button class="lib-close" onclick="Engine.toggleLibrary(false)">✕ ЗАТВОРИ</button>
         </div>
 
-        <div class="lib-section" style="border-color: #4caf50; background: rgba(76,175,80,0.02);">
-            <h3 class="lib-section-title" style="color: #4caf50;">📂 ИЗБЕРИ ОТ ТЕЛЕФОНА (.ZIP АРХИВ НА МОДЕЛА)</h3>
-            <p style="font-size: 12px; color: #aaa; margin-top: -10px; margin-bottom: 15px;">Избери <b>.zip архива</b> на модела. Системата ще го разархивира и прочете автоматично!</p>
+        <div class="lib-section" style="border-color: #4caf50; background: rgba(76,175,80,0.02); display: flex; justify-content: space-between; align-items: center; padding: 15px 20px;">
+            <div>
+                <h3 class="lib-section-title" style="color: #4caf50; margin: 0 0 5px 0;">📂 ИЗБЕРИ ОТ ТЕЛЕФОНА (.ZIP АРХИВ)</h3>
+                <p style="font-size: 12px; color: #aaa; margin: 0;">Избери локален модел за разархивиране.</p>
+            </div>
             <input type="file" id="zip-input" accept=".zip" style="display: none;" onchange="Engine.loadLocalZip(event)">
-            <button class="btn-main" style="background: #4caf50; padding: 12px;" onclick="document.getElementById('zip-input').click()">⚡ ИЗБЕРИ .ZIP ФАЙЛ</button>
+            <button class="btn-main" style="background: #4caf50; padding: 12px 20px; width: auto;" onclick="document.getElementById('zip-input').click()">⚡ ИЗБЕРИ .ZIP</button>
+        </div>
+
+        <div class="lib-section" style="border-color: var(--purple); background: rgba(188,19,254,0.02); display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; margin-bottom: 25px;">
+            <div>
+                <h3 class="lib-section-title" style="color: var(--purple); margin: 0 0 5px 0;">🎬 ГЛОБАЛНО АНИМИРАНЕ</h3>
+                <p style="font-size: 12px; color: #aaa; margin: 0;">Отвори студиото за движения и избери от 1000 вида анимации.</p>
+            </div>
+            <button class="btn-main" style="background: var(--purple); padding: 12px 20px; width: auto;" onclick="Engine.openAnimHubFromLib()">🎬 ОТВОРИ ХЪБ ЗА ДВИЖЕНИЯ</button>
         </div>
 
         <div class="lib-section">
-            <h3 class="lib-section-title">🌐 ИНТЕРНЕТ МОДЕЛИ (ОБЩО 10 СЛОТА)</h3>
+            <h3 class="lib-section-title">🌐 ФИЛТРИРАНИ САЙТОВЕ ЗА БЕЗПЛАТНИ МОДЕЛИ</h3>
             <div class="grid-assets">
-                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('robot')">🤖 1. Огромен Робот</button>
-                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('city')">🏙️ 2. Тестов Град</button>
-                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('car')">🏎️ 3. Спортна Кола</button>
-                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('ufo')">🛸 4. НЛО Летящо</button>
-                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('scifi_bike')">🏍️ 5. Кибер Мотор</button>
-                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('drone')">🚁 6. Тактически Дрон</button>
-                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('mech')">🦾 7. Боен Мех костюм</button>
-                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('jet')">✈️ 8. Свръхзвуков Изтребител</button>
-                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('arcade')">🕹️ 9. Ретро Аркада</button>
-                <button class="btn-asset-item" onclick="Engine.loadDirectOnlineModel('carrier')">🚢 10. Самолетоносач</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(1)">🌐 1. Sketchfab Free</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(2)">🌐 2. Poly Haven CG</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(3)">🌐 3. Mixamo Assets</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(4)">🌐 4. TurboSquid Free</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(5)">🌐 5. CGTrader Free</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(6)">🌐 6. Free3D Cyber</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(7)">🌐 7. Clara.io Open</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(8)">🌐 8. OpenGameArt 3D</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(9)">🌐 9. Unity Asset Free</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(10)">🌐 10. CadNav Repository</button>
             </div>
+        </div>
+    </div>
+
+    <div id="site-models-popup">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(0,242,255,0.2); padding-bottom:10px;">
+            <h3 id="popup-site-title" style="margin:0; font-family:'Orbitron'; color:var(--accent); font-size:16px;">Сайт</h3>
+            <button onclick="Engine.closeSitePopup()" style="background:transparent; border:none; color:#ff4444; font-weight:bold; cursor:pointer; font-size:16px;">✕</button>
+        </div>
+        <input type="text" id="popup-search-input" placeholder="Търси модел в сайта..." oninput="Engine.filterPopupModels()" style="margin-top:12px;">
+        <div id="popup-models-list-zone" class="popup-models-list"></div>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <button class="popup-action-btn" style="flex:1; background:#4caf50; color:white;" onclick="Engine.addSelectedPopupModelToGame(false)">ДОБАВИ В ИГРАТА</button>
+            <button class="popup-action-btn" style="flex:1; background:var(--purple); color:white;" onclick="Engine.addSelectedPopupModelToGame(true)">АНИМИРАЙ И ТОГАВА ДОБАВИ</button>
         </div>
     </div>
 
@@ -297,8 +335,6 @@
         <button class="inspector-btn" onclick="Engine.modifySelected('move', 'right')">➡️</button>
         <button class="inspector-btn" onclick="Engine.modifySelected('move', 'forward')">⬆️</button>
         <button class="inspector-btn" onclick="Engine.modifySelected('move', 'backward')">⬇️</button>
-        <br>
-        <button class="inspector-btn" style="border-color: #bc13fe; color: #bc13fe; font-weight:bold; width: 96%; margin-top:4px;" onclick="Engine.openAnimHub()">🎬 Анимиране</button>
         <br>
         <button class="inspector-btn" style="border-color: #ffca28; color: #ffca28;" onclick="Engine.copySelected()">📋 Копирай</button>
         <button class="inspector-btn" style="border-color: #ff4444; color: #ff4444;" onclick="Engine.deleteSelected()">🗑️ Изтрий</button>
@@ -392,6 +428,21 @@
                 this.selectedHubClip = null;
                 this.hubLoopEnabled = true;
 
+                this.currentActivePopupSite = null;
+                this.selectedPopupModelType = null;
+                this.allSitesModelsData = {
+                    1: [{id:"robot", name:"🤖 Огромен Робот"}, {id:"mech", name:"🦾 Боен Мех костюм"}],
+                    2: [{id:"city", name:"🏙️ Тестов Град"}, {id:"arcade", name:"🕹️ Ретро Аркада"}],
+                    3: [{id:"robot", name:"🤖 Анимиран Киборг"}, {id:"mech", name:"🦾 Скелет Боец"}],
+                    4: [{id:"car", name:"🏎️ Спортна Кола"}, {id:"jet", name:"✈️ Изтребител"}],
+                    5: [{id:"ufo", name:"🛸 НЛО Кораб"}, {id:"drone", name:"🚁 Тактически Дрон"}],
+                    6: [{id:"scifi_bike", name:"🏍️ Кибер Мотор"}, {id:"car", name:"🏎️ Бъги"}],
+                    7: [{id:"carrier", name:"🚢 Самолетоносач"}, {id:"city", name:"🏙️ Модулен Куб"}],
+                    8: [{id:"arcade", name:"🕹️ Пиксел Кабина"}, {id:"ufo", name:"🛸 Извънземна Чиния"}],
+                    9: [{id:"drone", name:"🚁 Разузнавач"}, {id:"jet", name:"✈️ Дрон Самолет"}],
+                    10: [{id:"scifi_bike", name:"🏍️ Квадроцикъл"}, {id:"robot", name:"🤖 Андроид преграда"}]
+                };
+
                 this.libraryMovements = [];
                 this.generateOneThousandMovements();
 
@@ -478,6 +529,78 @@
 
             toggleLibrary(show) {
                 document.getElementById('library-screen').style.display = show ? 'flex' : 'none';
+            }
+
+            openSitePopup(siteId) {
+                this.currentActivePopupSite = siteId;
+                this.selectedPopupModelType = null;
+                document.getElementById('popup-search-input').value = "";
+                
+                const siteNames = [
+                    "Sketchfab Free Assets", "Poly Haven CG Filtered", "Mixamo Characters", 
+                    "TurboSquid Free Engine", "CGTrader Free Models", "Free3D Cyber Room", 
+                    "Clara.io Open Library", "OpenGameArt 3D Repository", "Unity Asset Free Filter", 
+                    "CadNav Clean Repository"
+                ];
+                document.getElementById('popup-site-title').innerText = siteNames[siteId - 1];
+                document.getElementById('site-models-popup').style.display = 'flex';
+                this.buildPopupModelsUI(this.allSitesModelsData[siteId]);
+            }
+
+            closeSitePopup() {
+                document.getElementById('site-models-popup').style.display = 'none';
+            }
+
+            buildPopupModelsUI(models) {
+                const zone = document.getElementById('popup-models-list-zone');
+                zone.innerHTML = '';
+                models.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = 'model-row-item';
+                    div.id = `popup-row-${m.id}`;
+                    div.innerHTML = `<span>${m.name}</span><span style="font-size:11px; color:var(--accent);">[БЕЗПЛАТЕН .GLTF]</span>`;
+                    div.onclick = () => this.selectPopupModelRow(m.id);
+                    zone.appendChild(div);
+                });
+            }
+
+            filterPopupModels() {
+                if(!this.currentActivePopupSite) return;
+                const query = document.getElementById('popup-search-input').value.toLowerCase().trim();
+                const filtered = this.allSitesModelsData[this.currentActivePopupSite].filter(m => m.name.toLowerCase().includes(query));
+                this.buildPopupModelsUI(filtered);
+            }
+
+            selectPopupModelRow(id) {
+                document.querySelectorAll('.model-row-item').forEach(r => r.classList.remove('selected-row'));
+                const el = document.getElementById(`popup-row-${id}`);
+                if(el) el.classList.add('selected-row');
+                this.selectedPopupModelType = id;
+            }
+
+            addSelectedPopupModelToGame(shouldAnimateFirst) {
+                if(!this.selectedPopupModelType) {
+                    alert("Моля, избери модел от списъка първо!");
+                    return;
+                }
+                const modelToLoad = this.selectedPopupModelType;
+                this.closeSitePopup();
+                this.toggleLibrary(false);
+
+                if(shouldAnimateFirst) {
+                    this.loadDirectOnlineModel(modelToLoad);
+                    setTimeout(() => {
+                        this.selectedMesh = this.playerMesh;
+                        this.openAnimHub();
+                    }, 1000);
+                } else {
+                    this.loadDirectOnlineModel(modelToLoad);
+                }
+            }
+
+            openAnimHubFromLib() {
+                this.selectedMesh = this.playerMesh;
+                this.openAnimHub();
             }
 
             setupModelAnimations(gltf) {
@@ -593,8 +716,7 @@
             }
 
             loadDirectOnlineModel(type) {
-                this.toggleLibrary(false);
-                this.logChat(`Зареждам онлайн безплатен обект [${type}]... Изчакай малко.`, "ai");
+                this.logChat(`Зареждам филтриран безплатен обект [${type}]... Изчакай малко.`, "ai");
                 
                 let url = '';
                 let scale = 1.0;
@@ -645,7 +767,7 @@
                         this.setupModelAnimations(gltf); 
                         this.hasCustomModel = true;
                     }
-                    this.logChat(`Успешно зареден кибер обект: ${type}!`, "ai");
+                    this.logChat(`Успешно зареден кибер обект в 3D пространството: ${type}!`, "ai");
                 }, undefined, (err) => {
                     this.logChat("Грешка при извличане на 3D модела от облака.", "error");
                 });
@@ -1120,11 +1242,7 @@
                 }
 
                 if(/анимаци/i.test(text)) {
-                    if (this.selectedMesh) {
-                        this.openAnimHub();
-                    } else {
-                        this.logChat("Моля, първо кликнете с мишката директно върху някой 3D модел в пространството, за да го изберете!", "error");
-                    }
+                    this.openAnimHubFromLib();
                     return;
                 }
 
