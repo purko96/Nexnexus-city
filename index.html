@@ -313,7 +313,7 @@
     <div id="ui-layer">
         <div class="chat-container">
             <div id="chat-log">
-                <div class="msg ai-msg"><b>NEXUS:</b> Системата е готова. Напиши думата <b>библиотека</b> тук in чата, за да отвориш мениджъра за модели.</div>
+                <div class="msg ai-msg"><b>NEXUS:</b> Системата е готова. Напиши думата <b>библиотека</b> тук в чата, за да отвориш мениджъра за модели.</div>
             </div>
             <div class="input-group">
                 <input type="text" id="chat-input" placeholder="Комуникирай с AI (напиши библиотека)...">
@@ -371,6 +371,7 @@
                 this.mixer = null;
                 this.animationsMap = {}; 
                 this.currentAction = null;
+                this.loadedClips = [];
 
                 this.isDragging = false;
                 this.previousMousePosition = { x: 0, y: 0 };
@@ -410,15 +411,16 @@
                     this.libraryMovements.push({
                         id: `game_${i}`,
                         name: `🎮 [Гейминг ${i}] ${baseName} (Версия ${variation})`,
-                        file: "game_asset"
+                        file: "game_asset",
+                        index: (i - 1) % gameTypes.length
                     });
                 }
 
                 const movieTypes = [
                     "Драматичен плач", "Силен актьорски смях", "Диалог с жестове", "Уплашено оглеждане", "Военен поздрав",
                     "Romantic waving", "Сядане на трон", "Мислителна поза", "Падане в безсъзнание", "Бавен епичен ход",
-                    "Шекспирова реч", "Поклон перед публика", "Изплашено бягство", "Посочване с ярост", "Заспиване на лето",
-                    "Прегръдка в близък план", "РРъкостискане", "Четене на тайна книга", "Пиене от чаша", "Кашляне в прахта",
+                    "Шекспирова реч", "Поклон перед публика", "Изплашено бягство", "Посочване с ярост", "Заспиване на легло",
+                    "Прегръдка в близък план", "Ръкостискане", "Четене на тайна книга", "Пиене от чаша", "Кашляне в прахта",
                     "Гледане към небето", "Избърсване на сълза", "Тайнствено шепнене", "Внезапен шок", "Побединосно вдигане на ръце"
                 ];
                 for (let i = 501; i <= 1000; i++) {
@@ -427,7 +429,8 @@
                     this.libraryMovements.push({
                         id: `movie_${i}`,
                         name: `🎬 [Филмова ${i}] ${baseName} (Модификация ${variation})`,
-                        file: "movie_asset"
+                        file: "movie_asset",
+                        index: (i - 501) % movieTypes.length
                     });
                 }
             }
@@ -446,7 +449,7 @@
                 this.grid = new THREE.GridHelper(400, 50, 0xff00ff, 0x005588);
                 this.scene.add(this.grid);
 
-                this.ambientLight = new THREE.AmbientLight(0xfff0e0, 1.2);
+                this.ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
                 this.scene.add(this.ambientLight);
 
                 this.light = new THREE.PointLight(0x00f2ff, 2.5, 120);
@@ -476,6 +479,7 @@
 
                 this.mixer = new THREE.AnimationMixer(gltf.scene);
                 this.animationsMap = {};
+                this.loadedClips = gltf.animations;
 
                 gltf.animations.forEach(clip => {
                     const name = clip.name.toLowerCase();
@@ -627,7 +631,7 @@
                 if (mode === 'day') {
                     this.scene.background.setHex(0x00bfff);
                     this.scene.fog = new THREE.Fog(0x00bfff, 40, 400); 
-                    this.ambientLight.color.setHex(0xfff0e0); 
+                    this.ambientLight.color.setHex(0xffffff); 
                     this.ambientLight.intensity = 1.2; 
                     this.celestialBody.material.color.setHex(0xfffae0); 
                     this.celestialLight.color.setHex(0xffffff);
@@ -1243,10 +1247,10 @@
 
                 this.hubMixer = new THREE.AnimationMixer(this.hubActor);
 
-                if (this.selectedMesh.animations && this.selectedMesh.animations.length > 0) {
+                if (this.loadedClips && this.loadedClips.length > 0) {
+                    this.hubAnims = this.loadedClips;
+                } else if (this.selectedMesh.animations && this.selectedMesh.animations.length > 0) {
                     this.hubAnims = this.selectedMesh.animations;
-                } else if (this.animationsMap) {
-                    this.hubAnims = Object.values(this.animationsMap).map(action => action.getClip());
                 } else {
                     this.hubAnims = [];
                 }
@@ -1283,16 +1287,12 @@
                 const activeBtn = document.getElementById(`anim-item-${id}`);
                 if (activeBtn) activeBtn.classList.add('anim-item-active');
 
-                let mappedName = "Walking";
-                if(id.includes("idle") || id.includes("1")) mappedName = "Idle";
-                if(id.includes("run") || id.includes("2")) mappedName = "Running";
-                if(id.includes("jump") || id.includes("3")) mappedName = "Jump";
-                if(id.includes("punch") || id.includes("4")) mappedName = "Punch";
-                if(id.includes("kick") || id.includes("5")) mappedName = "Wave"; 
-                if(id.includes("dance")) mappedName = "Dance";
-                if(id.includes("death")) mappedName = "Death";
+                const foundObj = this.libraryMovements.find(m => m.id === id);
+                if (!foundObj) return;
 
-                const clip = THREE.AnimationClip.findByName(this.hubAnims, mappedName);
+                let clipIndex = foundObj.index % this.hubAnims.length;
+                const clip = this.hubAnims[clipIndex];
+
                 if (clip) {
                     const action = this.hubMixer.clipAction(clip);
                     const speed = parseFloat(document.getElementById('anim-speed-slider').value);
@@ -1310,8 +1310,7 @@
                     action.reset().play();
                     this.selectedHubClip = clip;
                     
-                    const foundObj = this.libraryMovements.find(m => m.id === id);
-                    document.getElementById('anim-current-status').innerText = `Поза: ${foundObj ? foundObj.name : id}`;
+                    document.getElementById('anim-current-status').innerText = `Поза: ${foundObj.name}`;
                 }
             }
 
@@ -1342,6 +1341,8 @@
                     if (!this.hubLoopEnabled) {
                         action.setLoop(THREE.LoopOnce);
                         action.clampWhenFinished = true;
+                    } else {
+                        action.setLoop(THREE.LoopRepeat);
                     }
 
                     if (this.currentAction) {
@@ -1350,9 +1351,9 @@
                         action.play();
                     }
                     this.currentAction = action;
-                    this.logChat("Филмовата анимация е успешно прехвърлена!", "ai");
+                    this.logChat("Анимацията от файла е успешно прехвърлена в 3D пространството!", "ai");
                 } else {
-                    this.logChat("Анимацията беше тествана върху скелета, но този процедурен кубичен обект няма кости.", "ai");
+                    this.logChat("Анимацията беше тествана върху скелета, но този кубичен обект няма вградени кости за огъване.", "ai");
                 }
 
                 this.closeAnimHub();
@@ -1401,7 +1402,7 @@
                             targetBody.velocity.z = 0;
                         }
 
-                        if (this.hasCustomModel && this.mixer) {
+                        if (this.hasCustomModel && this.mixer && !this.currentAction?.loop === THREE.LoopOnce) {
                             if (this.isPunching) {
                                 this.punchTimer -= dt;
                                 if (this.punchTimer <= 0) this.isPunching = false;
