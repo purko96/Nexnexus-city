@@ -1164,78 +1164,103 @@
             }
 
             initHubPreviewScene() {
-                if (this.hubRenderer) return;
-
                 const canvas = document.getElementById('anim-preview-canvas');
-                this.hubScene = new THREE.Scene();
-                
-                this.hubCamera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
-                this.hubCamera.position.set(0, 2.2, 5.5);
+                if (!canvas) return;
 
-                this.hubRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
-                this.hubRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
-                this.hubRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-                const ambient = new THREE.AmbientLight(0xffffff, 1.2);
-                this.hubScene.add(ambient);
-                const dirLight = new THREE.DirectionalLight(0x00f2ff, 1.0);
-                dirLight.position.set(5, 10, 7);
-                this.hubScene.add(dirLight);
-
-                const gridHelper = new THREE.GridHelper(20, 20, 0xbc13fe, 0x444444);
-                gridHelper.position.y = 0;
-                this.hubScene.add(gridHelper);
-
-                const loader = new THREE.GLTFLoader();
-                loader.load('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/RobotExpressive/glTF-Binary/RobotExpressive.glb', (gltf) => {
-                    this.hubActor = gltf.scene;
-                    this.hubActor.scale.set(0.45, 0.45, 0.45);
-                    this.hubActor.position.set(0, 0, 0);
-                    this.hubScene.add(this.hubActor);
+                // Настройка на рендерера и камерата при първо зареждане
+                if (!this.hubRenderer) {
+                    this.hubScene = new THREE.Scene();
                     
-                    this.hubActor.updateMatrixWorld(true);
-                    
-                    let targetForSkeleton = this.hubActor;
-                    this.hubActor.traverse((child) => {
-                        if (child.isSkinnedMesh) {
-                            targetForSkeleton = child;
-                            child.updateMatrixWorld(true);
-                            if(child.skeleton) {
-                                child.skeleton.update();
-                            }
+                    this.hubCamera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 100);
+                    this.hubCamera.position.set(0, 2.2, 5.5);
+
+                    this.hubRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+                    this.hubRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+                    this.hubRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+                    const ambient = new THREE.AmbientLight(0xffffff, 1.2);
+                    this.hubScene.add(ambient);
+                    const dirLight = new THREE.DirectionalLight(0x00f2ff, 1.0);
+                    dirLight.position.set(5, 10, 7);
+                    this.hubScene.add(dirLight);
+
+                    const gridHelper = new THREE.GridHelper(20, 20, 0xbc13fe, 0x444444);
+                    gridHelper.position.y = 0;
+                    this.hubScene.add(gridHelper);
+
+                    const clockHub = new THREE.Clock();
+                    const renderHub = () => {
+                        requestAnimationFrame(renderHub);
+                        const dt = clockHub.getDelta();
+                        if (this.hubMixer) this.hubMixer.update(dt);
+                        if (this.skeletonHelper) this.skeletonHelper.update();
+                        if (this.hubRenderer && this.hubScene && this.hubCamera) {
+                            this.hubRenderer.render(this.hubScene, this.hubCamera);
                         }
-                    });
-                    
-                    this.skeletonHelper = new THREE.SkeletonHelper(targetForSkeleton);
-                    this.skeletonHelper.material.color.setHex(0x00ffcc);
-                    this.skeletonHelper.material.linewidth = 5;
-                    this.skeletonHelper.material.depthWrite = false;
-                    this.skeletonHelper.renderOrder = 999;
-                    this.hubScene.add(this.skeletonHelper);
-                    
-                    this.hubMixer = new THREE.AnimationMixer(this.hubActor);
-                    this.hubAnims = gltf.animations;
+                    };
+                    renderHub();
+                } else {
+                    // Коригираме размерите на екрана, за да не забива на мобилен телефон
+                    this.hubRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
+                    this.hubCamera.aspect = canvas.clientWidth / canvas.clientHeight;
+                    this.hubCamera.updateProjectionMatrix();
+                }
 
-                    if(this.hubAnims.length > 0) {
-                        this.previewHubMovement('game_1');
+                // Премахваме предишния модел и неговия скелет от прозорчето, ако има такива
+                if (this.hubActor) this.hubScene.remove(this.hubActor);
+                if (this.skeletonHelper) this.hubScene.remove(this.skeletonHelper);
+
+                // КЛОНИРАМЕ ТВОЯ СОБСТВЕН ИЗБРАН МОДЕЛ, вместо да теглим робот от GitHub
+                this.hubActor = this.selectedMesh.clone();
+                
+                // Нулираме физическата му позиция, за да застане точно в средата на инспектора
+                this.hubActor.position.set(0, 0, 0);
+                this.hubActor.rotation.set(0, 0, 0);
+                
+                // Ако моделът е твоят играч, мащабираме го за инспектора, за да се вижда добре
+                if (this.selectedMesh === this.playerMesh) {
+                    this.hubActor.scale.set(0.45, 0.45, 0.45);
+                } else {
+                    this.hubActor.scale.set(1, 1, 1);
+                }
+                
+                this.hubScene.add(this.hubActor);
+                this.hubActor.updateMatrixWorld(true);
+
+                // Намираме вътрешната структура на костите на твоя модел
+                let targetForSkeleton = this.hubActor;
+                this.hubActor.traverse((child) => {
+                    if (child.isSkinnedMesh) {
+                        targetForSkeleton = child;
+                        child.updateMatrixWorld(true);
+                        if (child.skeleton) child.skeleton.update();
                     }
                 });
 
-                const clockHub = new THREE.Clock();
-                const renderHub = () => {
-                    requestAnimationFrame(renderHub);
-                    const dt = clockHub.getDelta();
-                    if (this.hubMixer) this.hubMixer.update(dt);
-                    
-                    if (this.skeletonHelper) {
-                        this.skeletonHelper.update();
-                    }
-                    
-                    if (this.hubRenderer && this.hubScene && this.hubCamera) {
-                        this.hubRenderer.render(this.hubScene, this.hubCamera);
-                    }
-                };
-                renderHub();
+                // СЪЗДАВАМЕ СКЕЛЕТА (SKELETON HELPER) ВЪРХУ ТВОЯ МОДЕЛ
+                this.skeletonHelper = new THREE.SkeletonHelper(targetForSkeleton);
+                this.skeletonHelper.material.color.setHex(0x00ffcc); // Ярък кибернетичен цвят за костите
+                this.skeletonHelper.material.linewidth = 5;
+                this.skeletonHelper.material.depthWrite = false;
+                this.skeletonHelper.renderOrder = 999;
+                this.hubScene.add(this.skeletonHelper);
+
+                // Свързваме анимационния миксер с твоя клониран модел
+                this.hubMixer = new THREE.AnimationMixer(this.hubActor);
+
+                // Зареждаме анимационните клипове от оригиналния модел, за да ги има инспекторът
+                if (this.selectedMesh.animations && this.selectedMesh.animations.length > 0) {
+                    this.hubAnims = this.selectedMesh.animations;
+                } else if (this.animationsMap) {
+                    this.hubAnims = Object.values(this.animationsMap).map(action => action.getClip());
+                } else {
+                    this.hubAnims = [];
+                }
+
+                // Автоматично пускаме първото движение по подразбиране
+                if (this.libraryMovements.length > 0) {
+                    this.previewHubMovement(this.libraryMovements[0].id);
+                }
             }
 
             buildAnimationListUI(list) {
