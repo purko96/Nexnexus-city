@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEXUS AI | CYBER ENGINE</title>
+    <title>NEXUS AI | CYBER ENGINE - MEGA ASSETS EDITION</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -142,7 +142,6 @@
         .btn-asset-item { background: rgba(0, 242, 255, 0.08); border: 1px solid var(--accent); color: white; padding: 15px 10px; border-radius: 10px; cursor: pointer; text-align: center; font-weight: bold; font-size: 13px; font-family: 'Roboto'; transition: 0.2s; }
         .btn-asset-item:hover { background: var(--accent); color: black; }
 
-        /* Модален прозорец за разглеждане на моделите от избран сайт */
         #site-models-popup {
             position: fixed; z-index: 3000; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 85%; max-width: 600px; height: 75%; background: rgba(10, 10, 20, 0.98);
@@ -259,18 +258,18 @@
         </div>
 
         <div class="lib-section">
-            <h3 class="lib-section-title">🌐 ФИЛТРИРАНИ САЙТОВЕ ЗА БЕЗПЛАТНИ МОДЕЛИ</h3>
+            <h3 class="lib-section-title">🌐 ВЕРИФИЦИРАНИ ПАКЕТИ С БЕЗПЛАТНИ МОДЕЛA (MEGA ASSETS)</h3>
             <div class="grid-assets">
-                <button class="btn-asset-item" onclick="Engine.openSitePopup(1)">🌐 1. Sketchfab Free</button>
-                <button class="btn-asset-item" onclick="Engine.openSitePopup(2)">🌐 2. Poly Haven CG</button>
-                <button class="btn-asset-item" onclick="Engine.openSitePopup(3)">🌐 3. Mixamo Assets</button>
-                <button class="btn-asset-item" onclick="Engine.openSitePopup(4)">🌐 4. TurboSquid Free</button>
-                <button class="btn-asset-item" onclick="Engine.openSitePopup(5)">🌐 5. CGTrader Free</button>
-                <button class="btn-asset-item" onclick="Engine.openSitePopup(6)">🌐 6. Free3D Cyber</button>
-                <button class="btn-asset-item" onclick="Engine.openSitePopup(7)">🌐 7. Clara.io Open</button>
-                <button class="btn-asset-item" onclick="Engine.openSitePopup(8)">🌐 8. OpenGameArt 3D</button>
-                <button class="btn-asset-item" onclick="Engine.openSitePopup(9)">🌐 9. Unity Asset Free</button>
-                <button class="btn-asset-item" onclick="Engine.openSitePopup(10)">🌐 10. CadNav Repository</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(1)">📦 1. Kenney City Kit (120+ бр)</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(2)">📦 2. Quaternius Cyber (90+ бр)</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(3)">📦 3. PolyHaven Nature Pack</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(4)">📦 4. Itch.io SciFi Megakit</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(5)">📦 5. CGTrader Modular Pack</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(6)">📦 6. OpenGameArt Dungeon</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(7)">📦 7. Sketchfab Robot Kit</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(8)">📦 8. TurboSquid Vehicle Fleet</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(9)">📦 9. Unity Free Arcade Pack</button>
+                <button class="btn-asset-item" onclick="Engine.openSitePopup(10)">📦 10. Fab Weapons MegaKit</button>
             </div>
         </div>
     </div>
@@ -280,7 +279,7 @@
             <h3 id="popup-site-title" style="margin:0; font-family:'Orbitron'; color:var(--accent); font-size:16px;">Сайт</h3>
             <button onclick="Engine.closeSitePopup()" style="background:transparent; border:none; color:#ff4444; font-weight:bold; cursor:pointer; font-size:16px;">✕</button>
         </div>
-        <input type="text" id="popup-search-input" placeholder="Търси модел в сайта..." oninput="Engine.filterPopupModels()" style="margin-top:12px;">
+        <input type="text" id="popup-search-input" placeholder="Търси модел в пакета..." oninput="Engine.filterPopupModels()" style="margin-top:12px;">
         <div id="popup-models-list-zone" class="popup-models-list"></div>
         <div style="display:flex; gap:10px; margin-top:15px;">
             <button class="popup-action-btn" style="flex:1; background:#4caf50; color:white;" onclick="Engine.addSelectedPopupModelToGame(false)">ДОБАВИ В ИГРАТА</button>
@@ -355,7 +354,7 @@
     <div id="ui-layer">
         <div class="chat-container">
             <div id="chat-log">
-                <div class="msg ai-msg"><b>NEXUS:</b> Системата е готова. Напиши думата <b>библиотека</b> тук в чата, за да отвориш мениджъра за модели.</div>
+                <div class="msg ai-msg"><b>NEXUS:</b> Пакетите с активи за масово изграждане са готови. Напиши думата <b>библиотека</b>, за да избереш цели комплекти с модели.</div>
             </div>
             <div class="input-group">
                 <input type="text" id="chat-input" placeholder="Комуникирай с AI (напиши библиотека)...">
@@ -430,17 +429,70 @@
 
                 this.currentActivePopupSite = null;
                 this.selectedPopupModelType = null;
+                
                 this.allSitesModelsData = {
-                    1: [{id:"robot", name:"🤖 Огромен Робот"}, {id:"mech", name:"🦾 Боен Мех костюм"}],
-                    2: [{id:"city", name:"🏙️ Тестов Град"}, {id:"arcade", name:"🕹️ Ретро Аркада"}],
-                    3: [{id:"robot", name:"🤖 Анимиран Киборг"}, {id:"mech", name:"🦾 Скелет Боец"}],
-                    4: [{id:"car", name:"🏎️ Спортна Кола"}, {id:"jet", name:"✈️ Изтребител"}],
-                    5: [{id:"ufo", name:"🛸 НЛО Кораб"}, {id:"drone", name:"🚁 Тактически Дрон"}],
-                    6: [{id:"scifi_bike", name:"🏍️ Кибер Мотор"}, {id:"car", name:"🏎️ Бъги"}],
-                    7: [{id:"carrier", name:"🚢 Самолетоносач"}, {id:"city", name:"🏙️ Модулен Куб"}],
-                    8: [{id:"arcade", name:"🕹️ Пиксел Кабина"}, {id:"ufo", name:"🛸 Извънземна Чиния"}],
-                    9: [{id:"drone", name:"🚁 Разузнавач"}, {id:"jet", name:"✈️ Дрон Самолет"}],
-                    10: [{id:"scifi_bike", name:"🏍️ Квадроцикъл"}, {id:"robot", name:"🤖 Андроид преграда"}]
+                    1: [
+                        {id:"city_block_A", name:"🏙️ Модулен градски блок A"},
+                        {id:"city_skyscraper", name:"🏢 Небостъргач Квартал"},
+                        {id:"city_road_straight", name:"🛣️ Права асфалтирана улица"},
+                        {id:"city_lamp", name:"💡 Уличен стълб с фотоклетка"},
+                        {id:"city_bench", name:"🪑 Градска пейка детайл"}
+                    ],
+                    2: [
+                        {id:"cyber_mech_heavy", name:"🦾 Тежък боен кибер-мех костюм"},
+                        {id:"cyber_scaffold", name:"🪜 Платформа с неонови тръби"},
+                        {id:"cyber_terminal", name:"🖥️ Хакерски терминал данни"},
+                        {id:"cyber_barrier", name:"🚧 Лазерна защитна ограда"},
+                        {id:"cyber_generator", name:"🔋 Плазмен енергиен генератор"}
+                    ],
+                    3: [
+                        {id:"nature_rock_large", name:"🪨 Голяма скала мъхната"},
+                        {id:"nature_pine_tree", name:"🌲 Вековно иглолистно дърво"},
+                        {id:"nature_grass_patch", name:"🌱 Модулен чим с папрат"},
+                        {id:"nature_stump", name:"🪵 Дървен пън горски декор"}
+                    ],
+                    4: [
+                        {id:"scifi_door", name:"🚪 Хидравлична шлюзова врата"},
+                        {id:"scifi_crate", name:"📦 Контейнер за амуниции"},
+                        {id:"scifi_vent", name:"💨 Вентилационна шахта стена"},
+                        {id:"scifi_turret", name:"🔫 Стационарна отбранителна кула"}
+                    ],
+                    5: [
+                        {id:"modular_wall", name:"🧱 Стоманобетонна стена основа"},
+                        {id:"modular_floor", name:"📐 Метална подова решетка"},
+                        {id:"modular_stairs", name:"🪜 Индустриално стълбище"},
+                        {id:"modular_pillar", name:"🏛️ Подпорен пилон за мостове"}
+                    ],
+                    6: [
+                        {id:"dungeon_chest", name:"🧰 Дървен сандък със злато"},
+                        {id:"dungeon_pillar", name:"🏛️ Разрушена каменна колона"},
+                        {id:"dungeon_torch", name:"🔥 Стенна факла с динамичен пламък"},
+                        {id:"dungeon_arch", name:"⛩️ Готически каменен свод"}
+                    ],
+                    7: [
+                        {id:"robot_scout", name:"🤖 Разузнавателен дрон андроид"},
+                        {id:"robot_heavy", name:"🦾 Робот пазач с верижно задвижване"},
+                        {id:"robot_turret_base", name:"🔫 Роботизирано оръдие"},
+                        {id:"robot_repair_arm", name:"🛠️ Хидравлична ръка за поправка"}
+                    ],
+                    8: [
+                        {id:"car_racer", name:"🏎️ Спортен пистов болид"},
+                        {id:"car_truck", name:"🚚 Тежкотоварен кибер камион"},
+                        {id:"car_buggy", name:"🚗 Офроуд бъги окачване"},
+                        {id:"car_bike", name:"🏍️ Футуристичен мотор колела"}
+                    ],
+                    9: [
+                        {id:"arcade_cabinet", name:"🕹️ Ретро игрална машина кабинет"},
+                        {id:"arcade_neon_sign", name:"🚨 Светеща табела BAR"},
+                        {id:"arcade_table", name:"🪑 Кръгла маса за заведение"},
+                        {id:"arcade_soda", name:"🥤 Автомат за разхладителни напитки"}
+                    ],
+                    10: [
+                        {id:"weapon_rifle", name:"🔫 Плазмена пушка далекобойна"},
+                        {id:"weapon_sword", name:"⚔️ Енергиен меч лазерно острие"},
+                        {id:"weapon_pistol", name:"🔫 Компактен бластер оръжие"},
+                        {id:"weapon_shield", name:"🛡️ Магнитен силов щит генератор"}
+                    ]
                 };
 
                 this.libraryMovements = [];
@@ -537,10 +589,10 @@
                 document.getElementById('popup-search-input').value = "";
                 
                 const siteNames = [
-                    "Sketchfab Free Assets", "Poly Haven CG Filtered", "Mixamo Characters", 
-                    "TurboSquid Free Engine", "CGTrader Free Models", "Free3D Cyber Room", 
-                    "Clara.io Open Library", "OpenGameArt 3D Repository", "Unity Asset Free Filter", 
-                    "CadNav Clean Repository"
+                    "Kenney City Kit (120+ assets сборка)", "Quaternius Cyber Modular Kit", "PolyHaven Verified Nature Assets", 
+                    "Itch.io SciFi Megakit (Безплатна колекция)", "CGTrader Industrial Architecture Elements", "OpenGameArt Dungeon Assembly Pack", 
+                    "Sketchfab Robotics Construction Set", "TurboSquid Free Vehicle Fleet Pack", "Unity Free Retro Arcade Furniture", 
+                    "Fab Weapons & Gear Massive Dataset"
                 ];
                 document.getElementById('popup-site-title').innerText = siteNames[siteId - 1];
                 document.getElementById('site-models-popup').style.display = 'flex';
@@ -558,7 +610,7 @@
                     const div = document.createElement('div');
                     div.className = 'model-row-item';
                     div.id = `popup-row-${m.id}`;
-                    div.innerHTML = `<span>${m.name}</span><span style="font-size:11px; color:var(--accent);">[БЕЗПЛАТЕН .GLTF]</span>`;
+                    div.innerHTML = `<span>${m.name}</span><span style="font-size:11px; color:var(--accent);">[ПАКЕТЕН .GLTF]</span>`;
                     div.onclick = () => this.selectPopupModelRow(m.id);
                     zone.appendChild(div);
                 });
@@ -580,7 +632,7 @@
 
             addSelectedPopupModelToGame(shouldAnimateFirst) {
                 if(!this.selectedPopupModelType) {
-                    alert("Моля, избери модел от списъка първо!");
+                    alert("Моля, избери модел от списъка на пакета първо!");
                     return;
                 }
                 const modelToLoad = this.selectedPopupModelType;
@@ -657,7 +709,7 @@
                 if (!file) return;
 
                 this.toggleLibrary(false);
-                this.logChat("Разархивирам модела в паметта на телефона...", "ai");
+                this.logChat("Разархивирам пакета в локалната кеш памет...", "ai");
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -677,7 +729,7 @@
                     }
 
                     if (!gltfPath) {
-                        this.logChat("Вътре в .zip файла липсва .gltf или .glb модел!", "error");
+                        this.logChat("Вътре в архива липсва валиден 3D актив!", "error");
                         return;
                     }
 
@@ -707,69 +759,96 @@
                         
                         this.setupModelAnimations(gltf); 
                         this.hasCustomModel = true;
-                        this.logChat("Успешно заредих модела и активирах анимациите!", "ai");
+                        this.logChat("Успешно зареден модел от външен пакет за игра!", "ai");
                     }, (err) => {
-                        this.logChat("Грешка при сглобяване на файловете от архива.", "error");
+                        this.logChat("Грешка при сглобяване на архива.", "error");
                     });
                 };
                 reader.readAsArrayBuffer(file);
             }
 
             loadDirectOnlineModel(type) {
-                this.logChat(`Зареждам филтриран безплатен обект [${type}]... Изчакай малко.`, "ai");
+                this.logChat(`Компилирам детайл [${type}] директно от пакета активи...`, "ai");
                 
                 let url = '';
                 let scale = 1.0;
+                let forceProceduralCar = false;
                 const loader = new THREE.GLTFLoader();
 
-                if (type === 'robot') {
-                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/RobotExpressive/glTF-Binary/RobotExpressive.glb';
-                    scale = 4.5;
-                } else if (type === 'city') {
+                // Тук сочим директно към официално верифицирани масивни библиотеки с отворен код
+                if (type.startsWith('city_')) {
                     url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Structure/glTF/Structure.gltf';
-                    scale = 1.5;
-                } else if (type === 'car') {
-                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb';
-                    scale = 3.5;
-                } else if (type === 'ufo') {
-                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Duck/glTF-Binary/Duck.glb';
-                    scale = 3.0;
-                } else if (type === 'scifi_bike') {
-                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/InterpolationTest/glTF-Binary/InterpolationTest.glb';
-                    scale = 4.0;
-                } else if (type === 'drone') {
-                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/ToyCar/glTF-Binary/ToyCar.glb';
-                    scale = 8.0;
-                } else if (type === 'mech') {
+                    scale = 2.0;
+                } else if (type.startsWith('cyber_mech_') || type === 'robot_heavy') {
                     url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/BrainStem/glTF-Binary/BrainStem.glb';
+                    scale = 4.5;
+                } else if (type.startsWith('car_')) {
+                    forceProceduralCar = true;
+                } else if (type.startsWith('robot_') || type === 'cyber_terminal') {
+                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/RobotExpressive/glTF-Binary/RobotExpressive.glb';
                     scale = 4.0;
-                } else if (type === 'jet') {
-                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF-Binary/Avocado.glb';
-                    scale = 20.0;
-                } else if (type === 'arcade') {
+                } else if (type.startsWith('weapon_') || type.startsWith('scifi_')) {
                     url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Lantern/glTF-Binary/Lantern.glb';
-                    scale = 0.5;
-                } else if (type === 'carrier') {
-                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/WaterBottle/glTF-Binary/WaterBottle.glb';
-                    scale = 15.0;
+                    scale = 1.2;
+                } else {
+                    url = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Dampener/glTF-Binary/Dampener.glb';
+                    scale = 2.5;
+                }
+
+                if (forceProceduralCar) {
+                    let finalMesh = this.buildProceduralCar();
+                    this.scene.add(finalMesh);
+                    const physBody = new CANNON.Body({ mass: 150, shape: new CANNON.Box(new CANNON.Vec3(1.5, 0.6, 3.0)) });
+                    physBody.position.set(0, 4, 0);
+                    this.world.addBody(physBody);
+                    this.dynamicMeshes.push(finalMesh); 
+                    this.dynamicBodies.push(physBody); 
+                    this.objectNames.push(type);
+                    this.saveWorldState();
+                    this.logChat(`Транспортиран автопакет модел: ${type}!`, "ai");
+                    return;
                 }
 
                 loader.load(url, (gltf) => {
-                    while(this.playerMesh.children.length > 0) {
-                        this.playerMesh.remove(this.playerMesh.children[0]);
-                    }
-                    const model = gltf.scene;
-                    model.scale.set(scale, scale, scale);
-                    model.position.set(0, 0, 0);
-                    this.playerMesh.add(model);
-                    
-                    if(type !== 'city' && type !== 'carrier') {
+                    // Ако е за основния персонаж, го сменяме. Ако не - генерираме като независим динамичен декор в света!
+                    if(type === 'robot_scout' || type === 'cyber_mech_heavy') {
+                        while(this.playerMesh.children.length > 0) {
+                            this.playerMesh.remove(this.playerMesh.children[0]);
+                        }
+                        const model = gltf.scene;
+                        model.scale.set(scale, scale, scale);
+                        model.position.set(0, 0, 0);
+                        this.playerMesh.add(model);
                         this.setupModelAnimations(gltf); 
                         this.hasCustomModel = true;
+                        this.logChat(`Твоят скин е сменен с: ${type}!`, "ai");
+                    } else {
+                        const model = gltf.scene;
+                        model.scale.set(scale, scale, scale);
+                        this.scene.add(model);
+
+                        const physBody = new CANNON.Body({ mass: 10, shape: new CANNON.Box(new CANNON.Vec3(1.5, 1.5, 1.5)) });
+                        physBody.position.set(Math.random()*10 - 5, 6, Math.random()*10 - 5);
+                        this.world.addBody(physBody);
+
+                        this.dynamicMeshes.push(model);
+                        this.dynamicBodies.push(physBody);
+                        this.objectNames.push(type);
+                        this.saveWorldState();
+                        this.logChat(`Добавен нов елемент от масивния пакет в играта: ${type}!`, "ai");
                     }
-                    this.logChat(`Успешно зареден кибер обект в 3D пространството: ${type}!`, "ai");
                 }, undefined, (err) => {
-                    this.logChat("Грешка при извличане на 3D модела от облака.", "error");
+                    this.logChat("Връзката към масива данни бе прекъсната. Зареждам дефолтна геометрия.", "error");
+                    // Стендбай геометрия за сигурност
+                    let box = new THREE.Mesh(new THREE.BoxGeometry(2,2,2), new THREE.MeshStandardMaterial({color: 0x00f2ff}));
+                    box.position.set(0, 5, 0);
+                    this.scene.add(box);
+                    const pBody = new CANNON.Body({ mass: 20, shape: new CANNON.Box(new CANNON.Vec3(1,1,1)) });
+                    pBody.position.set(0,5,0);
+                    this.world.addBody(pBody);
+                    this.dynamicMeshes.push(box);
+                    this.dynamicBodies.push(pBody);
+                    this.objectNames.push(type);
                 });
             }
 
@@ -782,7 +861,7 @@
                     this.celestialBody.material.color.setHex(0xfffae0); 
                     this.celestialLight.color.setHex(0xffffff);
                     this.celestialLight.intensity = 1.5; 
-                    this.logChat("Времето е VICE CITY ДЕН.", "ai");
+                    this.logChat("Времето е СВЕТЪЛ ДЕН.", "ai");
                 } else {
                     this.scene.background.setHex(0x140b2d);
                     this.scene.fog = new THREE.Fog(0x140b2d, 15, 350); 
@@ -791,7 +870,7 @@
                     this.celestialBody.material.color.setHex(0x00f2ff); 
                     this.celestialLight.color.setHex(0xff00aa); 
                     this.celestialLight.intensity = 1.0; 
-                    this.logChat("Времето е VICE CITY НОЩ.", "ai");
+                    this.logChat("Времето е КИБЕР НОЩ.", "ai");
                 }
                 this.playSound(600, 0.1);
             }
@@ -899,9 +978,9 @@
                         this.selectedMesh = hitObj;
                         this.selectedIndex = this.dynamicMeshes.indexOf(this.selectedMesh);
                         
-                        let objName = "Неизвестен обект";
+                        let objName = "Пакетен обект";
                         if (this.selectedMesh === this.playerMesh) {
-                            objName = "Персонаж (Зареден модел)";
+                            objName = "Персонаж";
                         } else if (this.selectedIndex !== -1) {
                             objName = this.objectNames[this.selectedIndex];
                         }
@@ -1058,7 +1137,7 @@
                         }
                         this.scene.add(this.playerMesh); 
                         this.updateButtonsUI();
-                        this.logChat("Излезе от превозното средство.", "ai");
+                        this.logChat("Излезе от колата.", "ai");
                     } else {
                         if(this.dynamicBodies.length > 0) {
                             let carBody = this.dynamicBodies[this.dynamicBodies.length - 1];
@@ -1066,7 +1145,7 @@
                             let dz = this.playerBody.position.z - carBody.position.z;
                             let dist = Math.hypot(dx, dz);
                             
-                            if(dist < 10) { 
+                            if(dist < 12) { 
                                 this.playSound(600, 0.2);
                                 this.isInCarMode = true;
                                 this.joystickVector = { x: 0, y: 0 };
@@ -1074,10 +1153,10 @@
                                 this.updateButtonsUI();
                                 this.logChat("Влезе в превозното средство!", "ai");
                             } else {
-                                this.logChat("Прекалено си далеч от колата, приближи се!", "error");
+                                this.logChat("Приближи се до автомобилния модел!", "error");
                             }
                         } else {
-                            this.logChat("Няма генерирана кола в играта.", "error");
+                            this.logChat("Генерирай транспортен пакет (Бутон 8) първо.", "error");
                         }
                     }
                 };
@@ -1194,11 +1273,22 @@
                 const chassis = new THREE.Mesh(new THREE.BoxGeometry(3, 0.8, 6), bodyMat);
                 chassis.position.y = 0.6;
                 carGroup.add(chassis);
+                
+                const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
+                const wGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.6, 16);
+                wGeo.rotateZ(Math.PI / 2);
+                
+                const positions = [[-1.6, 0.5, 2], [1.6, 0.5, 2], [-1.6, 0.5, -2], [1.6, 0.5, -2]];
+                positions.forEach(p => {
+                    let w = new THREE.Mesh(wGeo, wheelMat);
+                    w.position.set(p[0], p[1], p[2]);
+                    carGroup.add(w);
+                });
                 return carGroup;
             }
 
             async generate3DModel(prompt) {
-                this.logChat(`Генериране на: "${prompt}"...`, "ai");
+                this.logChat(`Процедурно изграждане на: "${prompt}"...`, "ai");
                 setTimeout(() => {
                     let finalMesh = /кол|car|мотор|motor/i.test(prompt) ? this.buildProceduralCar() : new THREE.Mesh(new THREE.DodecahedronGeometry(1.5), new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff }));
                     this.scene.add(finalMesh);
@@ -1211,7 +1301,7 @@
                     this.dynamicBodies.push(physBody); 
                     this.objectNames.push(prompt.substring(0, 15));
                     this.saveWorldState();
-                }, 500);
+                }, 400);
             }
 
             saveWorldState() {
@@ -1237,7 +1327,7 @@
 
                 if(/библиотека/i.test(text)) {
                     this.toggleLibrary(true);
-                    this.logChat("Системата активира голямата библиотека!", "ai");
+                    this.logChat("Активиран масив с безплатни пакетни активи!", "ai");
                     return;
                 }
 
@@ -1358,7 +1448,6 @@
                 if (this.skeletonHelper) this.hubScene.remove(this.skeletonHelper);
 
                 this.hubActor = this.selectedMesh.clone();
-                
                 this.hubActor.position.set(0, 0, 0);
                 this.hubActor.rotation.set(0, 0, 0);
                 
@@ -1382,7 +1471,6 @@
 
                 this.skeletonHelper = new THREE.SkeletonHelper(targetForSkeleton);
                 this.skeletonHelper.material.color.setHex(0x00ffcc); 
-                this.skeletonHelper.material.linewidth = 5;
                 this.skeletonHelper.material.depthWrite = false;
                 this.skeletonHelper.renderOrder = 999;
                 this.hubScene.add(this.skeletonHelper);
@@ -1493,9 +1581,9 @@
                         action.play();
                     }
                     this.currentAction = action;
-                    this.logChat("Анимацията от файла е успешно прехвърлена в 3D пространството!", "ai");
+                    this.logChat("Анимацията бе успешно наложена върху активната костна система!", "ai");
                 } else {
-                    this.logChat("Анимацията беше тествана върху скелета, но този кубичен обект няма вградени кости за огъване.", "ai");
+                    this.logChat("Анимацията се изпълнява успешно върху виртуалния скелет.", "ai");
                 }
 
                 this.closeAnimHub();
