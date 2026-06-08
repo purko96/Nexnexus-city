@@ -417,7 +417,7 @@
                 const movieTypes = [
                     "Драматичен плач", "Силен актьорски смях", "Диалог с жестове", "Уплашено оглеждане", "Военен поздрав",
                     "Romantic waving", "Сядане на трон", "Мислителна поза", "Падане в безсъзнание", "Бавен епичен ход",
-                    "Шекспирова реч", "Поклон перед публика", "Изплашено бягство", "Посочване с ярост", "Заспиване на легло",
+                    "Шекспирова реч", "Поклон перед публика", "Изплашено бягство", "Посочване с ярост", "Заспиване на лето",
                     "Прегръдка в близък план", "РРъкостискане", "Четене на тайна книга", "Пиене от чаша", "Кашляне в прахта",
                     "Гледане към небето", "Избърсване на сълза", "Тайнствено шепнене", "Внезапен шок", "Побединосно вдигане на ръце"
                 ];
@@ -1004,9 +1004,13 @@
             }
 
             modifySelected(type, value) {
-                if (this.selectedIndex === -1 || !this.selectedMesh) return;
-                const body = this.dynamicBodies[this.selectedIndex];
+                if (!this.selectedMesh) return;
+                
+                const isPlayer = (this.selectedMesh === this.playerMesh);
+                const body = isPlayer ? this.playerBody : this.dynamicBodies[this.selectedIndex];
                 const mesh = this.selectedMesh;
+
+                if (!body || !mesh) return;
 
                 if (type === 'scale') {
                     mesh.scale.multiplyScalar(value);
@@ -1167,7 +1171,6 @@
                 const canvas = document.getElementById('anim-preview-canvas');
                 if (!canvas) return;
 
-                // Настройка на рендерера и камерата при първо зареждане
                 if (!this.hubRenderer) {
                     this.hubScene = new THREE.Scene();
                     
@@ -1200,24 +1203,19 @@
                     };
                     renderHub();
                 } else {
-                    // Коригираме размерите на екрана, за да не забива на мобилен телефон
                     this.hubRenderer.setSize(canvas.clientWidth, canvas.clientHeight);
                     this.hubCamera.aspect = canvas.clientWidth / canvas.clientHeight;
                     this.hubCamera.updateProjectionMatrix();
                 }
 
-                // Премахваме предишния модел и неговия скелет от прозорчето, ако има такива
                 if (this.hubActor) this.hubScene.remove(this.hubActor);
                 if (this.skeletonHelper) this.hubScene.remove(this.skeletonHelper);
 
-                // КЛОНИРАМЕ ТВОЯ СОБСТВЕН ИЗБРАН МОДЕЛ, вместо да теглим робот от GitHub
                 this.hubActor = this.selectedMesh.clone();
                 
-                // Нулираме физическата му позиция, за да застане точно в средата на инспектора
                 this.hubActor.position.set(0, 0, 0);
                 this.hubActor.rotation.set(0, 0, 0);
                 
-                // Ако моделът е твоят играч, мащабираме го за инспектора, за да се вижда добре
                 if (this.selectedMesh === this.playerMesh) {
                     this.hubActor.scale.set(0.45, 0.45, 0.45);
                 } else {
@@ -1227,7 +1225,6 @@
                 this.hubScene.add(this.hubActor);
                 this.hubActor.updateMatrixWorld(true);
 
-                // Намираме вътрешната структура на костите на твоя модел
                 let targetForSkeleton = this.hubActor;
                 this.hubActor.traverse((child) => {
                     if (child.isSkinnedMesh) {
@@ -1237,18 +1234,15 @@
                     }
                 });
 
-                // СЪЗДАВАМЕ СКЕЛЕТА (SKELETON HELPER) ВЪРХУ ТВОЯ МОДЕЛ
                 this.skeletonHelper = new THREE.SkeletonHelper(targetForSkeleton);
-                this.skeletonHelper.material.color.setHex(0x00ffcc); // Ярък кибернетичен цвят за костите
+                this.skeletonHelper.material.color.setHex(0x00ffcc); 
                 this.skeletonHelper.material.linewidth = 5;
                 this.skeletonHelper.material.depthWrite = false;
                 this.skeletonHelper.renderOrder = 999;
                 this.hubScene.add(this.skeletonHelper);
 
-                // Свързваме анимационния миксер с твоя клониран модел
                 this.hubMixer = new THREE.AnimationMixer(this.hubActor);
 
-                // Зареждаме анимационните клипове от оригиналния модел, за да ги има инспекторът
                 if (this.selectedMesh.animations && this.selectedMesh.animations.length > 0) {
                     this.hubAnims = this.selectedMesh.animations;
                 } else if (this.animationsMap) {
@@ -1257,7 +1251,6 @@
                     this.hubAnims = [];
                 }
 
-                // Автоматично пускаме първото движение по подразбиране
                 if (this.libraryMovements.length > 0) {
                     this.previewHubMovement(this.libraryMovements[0].id);
                 }
